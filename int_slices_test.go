@@ -5,6 +5,7 @@ import (
 	"testing"
 )
 
+//TestUniqueUint64 test unique uint64
 func TestUniqueUint64(t *testing.T) {
 	one := []uint64{3, 2, 1}
 	if !reflect.DeepEqual(UniqueUint64(one), one) {
