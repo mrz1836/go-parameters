@@ -9,6 +9,8 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"github.com/gorilla/mux"
+	"github.com/julienschmidt/httprouter"
+	"github.com/ugorji/go/codec"
 	"io"
 	"io/ioutil"
 	"log"
@@ -19,14 +21,27 @@ import (
 	"strconv"
 	"strings"
 	"time"
-
-	"github.com/julienschmidt/httprouter"
-	"github.com/ugorji/go/codec"
 )
 
+//Constants for parameters package
 const (
 	//parametersKeyName standard key name for parameter data
 	parametersKeyName paramKey = "params"
+
+	//DateOnly is only the date
+	DateOnly = "2006-01-02"
+
+	//DateTime is not recommended, rather use time.RFC3339
+	DateTime = "2006-01-02 15:04:05"
+
+	// HTMLDateTimeLocal is the format used by the input type datetime-local
+	HTMLDateTimeLocal = "2006-01-02T15:04"
+)
+
+//Variables for parameters package
+var (
+	typeOfTime      = reflect.TypeOf(time.Time{})
+	typeOfPtrToTime = reflect.PtrTo(typeOfTime)
 )
 
 //paramKey used for context.WithValue
@@ -37,6 +52,12 @@ type Params struct {
 	isBinary bool
 	Values   map[string]interface{}
 }
+
+//CustomTypeHandler custom type handler
+type CustomTypeHandler func(field *reflect.Value, value interface{})
+
+//CustomTypeSetter is used when Imbue is called on an object to handle unknown types
+var CustomTypeSetter CustomTypeHandler
 
 //Get get param by key, return interface
 func (p *Params) Get(key string) (interface{}, bool) {
@@ -422,15 +443,6 @@ func (p *Params) GetBytes(key string) []byte {
 	return b
 }
 
-const (
-	//DateOnly is only the date
-	DateOnly = "2006-01-02"
-	//DateTime is not recommended, rather use time.RFC3339
-	DateTime = "2006-01-02 15:04:05"
-	// HTMLDateTimeLocal is the format used by the input type datetime-local
-	HTMLDateTimeLocal = "2006-01-02T15:04"
-)
-
 //GetTimeOk get param by key, return time
 func (p *Params) GetTimeOk(key string) (time.Time, bool) {
 	return p.GetTimeInLocationOk(key, time.UTC)
@@ -511,53 +523,6 @@ func (p *Params) GetJSON(key string) map[string]interface{} {
 	data, _ := p.GetJSONOk(key)
 	return data
 }
-
-//MakeParsedReq make parsed request
-func MakeParsedReq(fn http.HandlerFunc) http.HandlerFunc {
-	return func(rw http.ResponseWriter, r *http.Request) {
-		r = r.WithContext(context.WithValue(r.Context(), parametersKeyName, ParseParams(r)))
-		fn(rw, r)
-	}
-}
-
-//MakeHTTPRouterParsedReq make http router parsed request
-func MakeHTTPRouterParsedReq(fn httprouter.Handle) httprouter.Handle {
-	return func(rw http.ResponseWriter, r *http.Request, p httprouter.Params) {
-		r = r.WithContext(context.WithValue(r.Context(), parametersKeyName, ParseParams(r)))
-		params := GetParams(r)
-		for _, param := range p {
-			const ID = "id"
-			if strings.Contains(param.Key, ID) {
-				id, paramError := strconv.ParseUint(param.Value, 10, 64)
-				if paramError != nil {
-					params.Values[param.Key] = param.Value
-				} else {
-					params.Values[param.Key] = id
-				}
-			} else {
-				params.Values[param.Key] = param.Value
-			}
-		}
-		fn(rw, r, p)
-	}
-}
-
-//GetParams get parameters
-func GetParams(req *http.Request) *Params {
-	params := req.Context().Value(parametersKeyName).(*Params)
-	return params
-}
-
-//CustomTypeHandler custom type handler
-type CustomTypeHandler func(field *reflect.Value, value interface{})
-
-//CustomTypeSetter is used when Imbue is called on an object to handle unknown types
-var CustomTypeSetter CustomTypeHandler
-
-var (
-	typeOfTime      = reflect.TypeOf(time.Time{})
-	typeOfPtrToTime = reflect.PtrTo(typeOfTime)
-)
 
 //Clone makes a copy of this params object
 func (p *Params) Clone() *Params {
@@ -681,6 +646,12 @@ func contains(haystack []string, needle string) bool {
 	return false
 }
 
+//GetParams get parameters
+func GetParams(req *http.Request) *Params {
+	params := req.Context().Value(parametersKeyName).(*Params)
+	return params
+}
+
 //ParseParams parse parameters
 func ParseParams(req *http.Request) *Params {
 	var p Params
@@ -783,4 +754,34 @@ func ParseParams(req *http.Request) *Params {
 	}
 
 	return &p
+}
+
+//MakeParsedReq make parsed request
+func MakeParsedReq(fn http.HandlerFunc) http.HandlerFunc {
+	return func(rw http.ResponseWriter, r *http.Request) {
+		r = r.WithContext(context.WithValue(r.Context(), parametersKeyName, ParseParams(r)))
+		fn(rw, r)
+	}
+}
+
+//MakeHTTPRouterParsedReq make http router parsed request
+func MakeHTTPRouterParsedReq(fn httprouter.Handle) httprouter.Handle {
+	return func(rw http.ResponseWriter, r *http.Request, p httprouter.Params) {
+		r = r.WithContext(context.WithValue(r.Context(), parametersKeyName, ParseParams(r)))
+		params := GetParams(r)
+		for _, param := range p {
+			const ID = "id"
+			if strings.Contains(param.Key, ID) {
+				id, paramError := strconv.ParseUint(param.Value, 10, 64)
+				if paramError != nil {
+					params.Values[param.Key] = param.Value
+				} else {
+					params.Values[param.Key] = id
+				}
+			} else {
+				params.Values[param.Key] = param.Value
+			}
+		}
+		fn(rw, r, p)
+	}
 }
