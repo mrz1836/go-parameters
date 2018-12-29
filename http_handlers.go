@@ -46,7 +46,7 @@ func GeneralResponse(fn http.HandlerFunc) httprouter.Handle {
 	return EnableGZIP(MakeHTTPRouterParsedReq(CORSHeaders(fn)))
 }
 
-//GeneralJSONRequest calls the default wrappers for a json response: EnableGZIP, JSONResp, MakeHTTPRouterParsedReq, CORSHeaders
+//GeneralJSONResponse calls the default wrappers for a json response: EnableGZIP, JSONResp, MakeHTTPRouterParsedReq, CORSHeaders
 func GeneralJSONResponse(fn http.HandlerFunc) httprouter.Handle {
 	return EnableGZIP(JSONResp(MakeHTTPRouterParsedReq(CORSHeaders(fn))))
 }
