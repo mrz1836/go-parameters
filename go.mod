@@ -1,1 +1,1 @@
-module github.com/mrz1836/go-sanitize
+module github.com/mrz1836/go-parameters
