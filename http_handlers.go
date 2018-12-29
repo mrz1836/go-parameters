@@ -2,11 +2,10 @@ package parameters
 
 import (
 	"compress/gzip"
+	"github.com/julienschmidt/httprouter"
 	"io"
 	"net/http"
 	"strings"
-
-	"github.com/julienschmidt/httprouter"
 )
 
 //CORSHeaders adds cross origin resource sharing headers to a response
