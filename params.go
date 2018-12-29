@@ -1,10 +1,6 @@
-// Package parameters parses json into parameters object
-// usage:
-//   1) parse json to parameters:
-// parameters.MakeParsedReq(fn http.HandlerFunc)
-//   2) get the parameters:
-// params := parameters.GetParams(req)
-// val := params.GetXXX("key")
+/*
+Package parameters parses json, msg pack, or multi-part form data into a parameters object
+*/
 package parameters
 
 import (
@@ -12,6 +8,7 @@ import (
 	"context"
 	"encoding/base64"
 	"encoding/json"
+	"github.com/gorilla/mux"
 	"io"
 	"io/ioutil"
 	"log"
@@ -23,20 +20,25 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gorilla/mux"
 	"github.com/julienschmidt/httprouter"
 	"github.com/ugorji/go/codec"
 )
 
 const (
-	ParamsKey = "params"
+	//parametersKeyName standard key name for parameter data
+	parametersKeyName paramKey = "params"
 )
 
+//paramKey used for context.WithValue
+type paramKey string
+
+//Params is the parameter values
 type Params struct {
 	isBinary bool
 	Values   map[string]interface{}
 }
 
+//Get get param by key, return interface
 func (p *Params) Get(key string) (interface{}, bool) {
 	keys := strings.Split(key, ".")
 	root := p.Values
@@ -52,11 +54,12 @@ func (p *Params) Get(key string) (interface{}, bool) {
 	return val, ok
 }
 
+//GetFloatOk get param by key, return float
 func (p *Params) GetFloatOk(key string) (float64, bool) {
 	val, ok := p.Get(key)
-	if sval, sok := val.(string); sok {
+	if stringValue, sok := val.(string); sok {
 		var err error
-		val, err = strconv.ParseFloat(sval, 64)
+		val, err = strconv.ParseFloat(stringValue, 64)
 		ok = err == nil
 	}
 	if ok {
@@ -65,11 +68,13 @@ func (p *Params) GetFloatOk(key string) (float64, bool) {
 	return 0, false
 }
 
+//GetFloat get param by key, return float
 func (p *Params) GetFloat(key string) float64 {
 	f, _ := p.GetFloatOk(key)
 	return f
 }
 
+//GetFloatSliceOk get param by key, return slice of floats
 func (p *Params) GetFloatSliceOk(key string) ([]float64, bool) {
 	val, ok := p.Get(key)
 	if ok {
@@ -103,11 +108,13 @@ func (p *Params) GetFloatSliceOk(key string) ([]float64, bool) {
 	return []float64{}, false
 }
 
+//GetFloatSlice get param by key, return slice of floats
 func (p *Params) GetFloatSlice(key string) []float64 {
 	slice, _ := p.GetFloatSliceOk(key)
 	return slice
 }
 
+//GetBoolOk get param by key, return boolean
 func (p *Params) GetBoolOk(key string) (bool, bool) {
 	val, ok := p.Get(key)
 	if ok {
@@ -116,19 +123,21 @@ func (p *Params) GetBoolOk(key string) (bool, bool) {
 		} else if i, ik := p.GetIntOk(key); ik {
 			if i == 0 {
 				return false, true
-			} else {
-				return true, true
 			}
+
+			return true, true
 		}
 	}
 	return false, false
 }
 
+//GetBool get param by key, return boolean
 func (p *Params) GetBool(key string) bool {
 	f, _ := p.GetBoolOk(key)
 	return f
 }
 
+//GetIntOk get param by key, return integer
 func (p *Params) GetIntOk(key string) (int, bool) {
 	val, ok := p.Get(key)
 	switch v := val.(type) {
@@ -142,20 +151,22 @@ func (p *Params) GetIntOk(key string) (int, bool) {
 		ok = err == nil
 	}
 	if ok {
-		if ival, ok := val.(int64); ok {
-			return int(ival), true
-		} else if fval, ok := val.(float64); ok {
-			return int(fval), true
+		if integerValue, ok := val.(int64); ok {
+			return int(integerValue), true
+		} else if floatValue, ok := val.(float64); ok {
+			return int(floatValue), true
 		}
 	}
 	return 0, false
 }
 
+//GetInt get param by key, return integer
 func (p *Params) GetInt(key string) int {
 	f, _ := p.GetIntOk(key)
 	return f
 }
 
+//GetInt8Ok get param by key, return integer
 func (p *Params) GetInt8Ok(key string) (int8, bool) {
 	val, ok := p.GetIntOk(key)
 
@@ -166,11 +177,13 @@ func (p *Params) GetInt8Ok(key string) (int8, bool) {
 	return int8(val), true
 }
 
+//GetInt8 get param by key, return integer
 func (p *Params) GetInt8(key string) int8 {
 	f, _ := p.GetInt8Ok(key)
 	return f
 }
 
+//GetInt16Ok get param by key, return integer
 func (p *Params) GetInt16Ok(key string) (int16, bool) {
 	val, ok := p.GetIntOk(key)
 
@@ -181,11 +194,13 @@ func (p *Params) GetInt16Ok(key string) (int16, bool) {
 	return int16(val), true
 }
 
+//GetInt16 get param by key, return integer
 func (p *Params) GetInt16(key string) int16 {
 	f, _ := p.GetInt16Ok(key)
 	return f
 }
 
+//GetInt32Ok get param by key, return integer
 func (p *Params) GetInt32Ok(key string) (int32, bool) {
 	val, ok := p.GetIntOk(key)
 
@@ -196,11 +211,13 @@ func (p *Params) GetInt32Ok(key string) (int32, bool) {
 	return int32(val), true
 }
 
+//GetInt32 get param by key, return integer
 func (p *Params) GetInt32(key string) int32 {
 	f, _ := p.GetInt32Ok(key)
 	return f
 }
 
+//GetInt64Ok get param by key, return integer
 func (p *Params) GetInt64Ok(key string) (int64, bool) {
 	val, ok := p.GetIntOk(key)
 
@@ -211,11 +228,13 @@ func (p *Params) GetInt64Ok(key string) (int64, bool) {
 	return int64(val), true
 }
 
+//GetInt64 get param by key, return integer
 func (p *Params) GetInt64(key string) int64 {
 	f, _ := p.GetIntOk(key)
 	return int64(f)
 }
 
+//GetIntSliceOk get param by key, return slice of integers
 func (p *Params) GetIntSliceOk(key string) ([]int, bool) {
 	val, ok := p.Get(key)
 	if ok {
@@ -263,16 +282,18 @@ func (p *Params) GetIntSliceOk(key string) ([]int, bool) {
 	return []int{}, false
 }
 
+//GetIntSlice get param by key, return slice of integers
 func (p *Params) GetIntSlice(key string) []int {
 	slice, _ := p.GetIntSliceOk(key)
 	return slice
 }
 
+//GetUint64Ok get param by key, return unsigned integer
 func (p *Params) GetUint64Ok(key string) (uint64, bool) {
 	val, ok := p.Get(key)
-	if sval, sok := val.(string); sok {
+	if stringValue, sok := val.(string); sok {
 		var err error
-		val, err = strconv.ParseFloat(sval, 64)
+		val, err = strconv.ParseFloat(stringValue, 64)
 		ok = err == nil && val.(float64) >= 0
 	}
 	if ok {
@@ -289,23 +310,25 @@ func (p *Params) GetUint64Ok(key string) (uint64, bool) {
 			return uint64(valUint), true
 		} else if valUint, ok := val.(uint32); ok {
 			return uint64(valUint), true
-		} else if valfloat, ok := val.(float64); valfloat >= 0 && ok {
-			return uint64(valfloat), true
-		} else if valbyte, ok := val.([]byte); ok {
+		} else if valFloat, ok := val.(float64); valFloat >= 0 && ok {
+			return uint64(valFloat), true
+		} else if valByte, ok := val.([]byte); ok {
 			var err error
-			valfloat, err = strconv.ParseFloat(string(valbyte), 64)
-			ok = err == nil && valfloat >= 0
-			return uint64(valfloat), ok
+			valFloat, err = strconv.ParseFloat(string(valByte), 64)
+			ok = err == nil && valFloat >= 0
+			return uint64(valFloat), ok
 		}
 	}
 	return 0, false
 }
 
+//GetUint64 get param by key, return unsigned integer
 func (p *Params) GetUint64(key string) uint64 {
 	f, _ := p.GetUint64Ok(key)
 	return f
 }
 
+//GetUint64SliceOk get param by key, return slice of unsigned integers
 func (p *Params) GetUint64SliceOk(key string) ([]uint64, bool) {
 	if raw, ok := p.GetIntSliceOk(key); ok {
 		slice := make([]uint64, len(raw))
@@ -318,11 +341,13 @@ func (p *Params) GetUint64SliceOk(key string) ([]uint64, bool) {
 	return []uint64{}, false
 }
 
+//GetUint64Slice get param by key, return slice of unsigned integers
 func (p *Params) GetUint64Slice(key string) []uint64 {
 	slice, _ := p.GetUint64SliceOk(key)
 	return slice
 }
 
+//GetStringOk get param by key, return string
 func (p *Params) GetStringOk(key string) (string, bool) {
 	val, ok := p.Get(key)
 	if ok {
@@ -335,6 +360,7 @@ func (p *Params) GetStringOk(key string) (string, bool) {
 	return "", false
 }
 
+//GetString get param by key, return string
 func (p *Params) GetString(key string) string {
 	//Get the string if found
 	str, _ := p.GetStringOk(key)
@@ -343,6 +369,7 @@ func (p *Params) GetString(key string) string {
 	return strings.Trim(str, " ")
 }
 
+//GetStringSliceOk get param by key, return slice of strings
 func (p *Params) GetStringSliceOk(key string) ([]string, bool) {
 	val, ok := p.Get(key)
 	if ok {
@@ -364,11 +391,13 @@ func (p *Params) GetStringSliceOk(key string) ([]string, bool) {
 	return []string{}, false
 }
 
+//GetStringSlice get param by key, return slice of strings
 func (p *Params) GetStringSlice(key string) []string {
 	slice, _ := p.GetStringSliceOk(key)
 	return slice
 }
 
+//GetBytesOk get param by key, return slice of bytes
 func (p *Params) GetBytesOk(key string) ([]byte, bool) {
 	if dataStr, ok := p.Get(key); ok {
 		var dataByte []byte
@@ -387,12 +416,14 @@ func (p *Params) GetBytesOk(key string) ([]byte, bool) {
 	return nil, false
 }
 
+//GetBytes get param by key, return slice of bytes
 func (p *Params) GetBytes(key string) []byte {
-	bytes, _ := p.GetBytesOk(key)
-	return bytes
+	b, _ := p.GetBytesOk(key)
+	return b
 }
 
 const (
+	//DateOnly is only the date
 	DateOnly = "2006-01-02"
 	//DateTime is not recommended, rather use time.RFC3339
 	DateTime = "2006-01-02 15:04:05"
@@ -400,15 +431,18 @@ const (
 	HTMLDateTimeLocal = "2006-01-02T15:04"
 )
 
+//GetTimeOk get param by key, return time
 func (p *Params) GetTimeOk(key string) (time.Time, bool) {
 	return p.GetTimeInLocationOk(key, time.UTC)
 }
 
+//GetTime get param by key, return time
 func (p *Params) GetTime(key string) time.Time {
 	t, _ := p.GetTimeOk(key)
 	return t
 }
 
+//GetTimeInLocationOk get param by key, return time
 func (p *Params) GetTimeInLocationOk(key string, loc *time.Location) (time.Time, bool) {
 	val, ok := p.Get(key)
 	if !ok {
@@ -435,11 +469,13 @@ func (p *Params) GetTimeInLocationOk(key string, loc *time.Location) (time.Time,
 	return time.Time{}, false
 }
 
+//GetTimeInLocation get param by key, return time
 func (p *Params) GetTimeInLocation(key string, loc *time.Location) time.Time {
 	t, _ := p.GetTimeInLocationOk(key, loc)
 	return t
 }
 
+//GetFileOk get param by key, return file
 func (p *Params) GetFileOk(key string) (*multipart.FileHeader, bool) {
 	val, ok := p.Get(key)
 	if !ok {
@@ -451,6 +487,7 @@ func (p *Params) GetFileOk(key string) (*multipart.FileHeader, bool) {
 	return nil, false
 }
 
+//GetJSONOk get param by key, return map if string interface
 func (p *Params) GetJSONOk(key string) (map[string]interface{}, bool) {
 	if v, ok := p.Get(key); ok {
 		if d, ok := v.(map[string]interface{}); ok {
@@ -469,27 +506,30 @@ func (p *Params) GetJSONOk(key string) (map[string]interface{}, bool) {
 	return jsonData, true
 }
 
+//GetJSON get param by key, return map if string interface
 func (p *Params) GetJSON(key string) map[string]interface{} {
 	data, _ := p.GetJSONOk(key)
 	return data
 }
 
+//MakeParsedReq make parsed request
 func MakeParsedReq(fn http.HandlerFunc) http.HandlerFunc {
 	return func(rw http.ResponseWriter, r *http.Request) {
-		r = r.WithContext(context.WithValue(r.Context(), ParamsKey, ParseParams(r)))
+		r = r.WithContext(context.WithValue(r.Context(), parametersKeyName, ParseParams(r)))
 		fn(rw, r)
 	}
 }
 
+//MakeHTTPRouterParsedReq make http router parsed request
 func MakeHTTPRouterParsedReq(fn httprouter.Handle) httprouter.Handle {
 	return func(rw http.ResponseWriter, r *http.Request, p httprouter.Params) {
-		r = r.WithContext(context.WithValue(r.Context(), ParamsKey, ParseParams(r)))
+		r = r.WithContext(context.WithValue(r.Context(), parametersKeyName, ParseParams(r)))
 		params := GetParams(r)
 		for _, param := range p {
 			const ID = "id"
 			if strings.Contains(param.Key, ID) {
-				id, perr := strconv.ParseUint(param.Value, 10, 64)
-				if perr != nil {
+				id, paramError := strconv.ParseUint(param.Value, 10, 64)
+				if paramError != nil {
 					params.Values[param.Key] = param.Value
 				} else {
 					params.Values[param.Key] = id
@@ -502,23 +542,24 @@ func MakeHTTPRouterParsedReq(fn httprouter.Handle) httprouter.Handle {
 	}
 }
 
+//GetParams get parameters
 func GetParams(req *http.Request) *Params {
-	params := req.Context().Value(ParamsKey).(*Params)
+	params := req.Context().Value(parametersKeyName).(*Params)
 	return params
 }
 
+//CustomTypeHandler custom type handler
 type CustomTypeHandler func(field *reflect.Value, value interface{})
 
-// CustomTypeSetter is used when Imbue is called on an object to handle unknown
-// types
+//CustomTypeSetter is used when Imbue is called on an object to handle unknown types
 var CustomTypeSetter CustomTypeHandler
 
 var (
-	typeOfTime      reflect.Type = reflect.TypeOf(time.Time{})
-	typeOfPtrToTime reflect.Type = reflect.PtrTo(typeOfTime)
+	typeOfTime      = reflect.TypeOf(time.Time{})
+	typeOfPtrToTime = reflect.PtrTo(typeOfTime)
 )
 
-// Clone makes a copy of this params object
+//Clone makes a copy of this params object
 func (p *Params) Clone() *Params {
 	values := make(map[string]interface{}, len(p.Values))
 	for k, v := range p.Values {
@@ -530,7 +571,7 @@ func (p *Params) Clone() *Params {
 	}
 }
 
-//Sets the parameters to the object by type; does not handle nested parameters
+//Imbue sets the parameters to the object by type; does not handle nested parameters
 func (p *Params) Imbue(obj interface{}) {
 
 	//Get the type of the object
@@ -540,7 +581,7 @@ func (p *Params) Imbue(obj interface{}) {
 	objectValue := reflect.ValueOf(obj).Elem()
 
 	//Loop our parameters
-	for k, _ := range p.Values {
+	for k := range p.Values {
 
 		//Make the incoming key_name into KeyName
 		key := SnakeToCamelCase(k, true)
@@ -609,7 +650,7 @@ func (p *Params) Imbue(obj interface{}) {
 	}
 }
 
-// HasAll will return if all specified keys are found in the params object
+//HasAll will return if all specified keys are found in the params object
 func (p *Params) HasAll(keys ...string) (bool, []string) {
 	missing := make([]string, 0)
 	for _, key := range keys {
@@ -620,15 +661,16 @@ func (p *Params) HasAll(keys ...string) (bool, []string) {
 	return len(missing) == 0, missing
 }
 
-//Permits only the allowed fields given by allowedKeys
+//Permit permits only the allowed fields given by allowedKeys
 func (p *Params) Permit(allowedKeys []string) {
-	for key, _ := range p.Values {
+	for key := range p.Values {
 		if !contains(allowedKeys, key) {
 			delete(p.Values, key)
 		}
 	}
 }
 
+//contains contains needle in haystack
 func contains(haystack []string, needle string) bool {
 	needle = strings.ToLower(needle)
 	for _, straw := range haystack {
@@ -639,9 +681,10 @@ func contains(haystack []string, needle string) bool {
 	return false
 }
 
+//ParseParams parse parameters
 func ParseParams(req *http.Request) *Params {
 	var p Params
-	if params, exists := req.Context().Value(ParamsKey).(*Params); exists {
+	if params, exists := req.Context().Value(parametersKeyName).(*Params); exists {
 		return params
 	}
 	ct := req.Header.Get("Content-Type")
@@ -655,20 +698,20 @@ func ParseParams(req *http.Request) *Params {
 			log.Println("Request.ParseForm Error", err)
 		}
 	}
-	tmap := make(map[string]interface{}, len(req.Form))
+	tempMap := make(map[string]interface{}, len(req.Form))
 	for k, v := range req.Form {
 		if strings.ToLower(v[0]) == "true" {
-			tmap[k] = true
+			tempMap[k] = true
 		} else if strings.ToLower(v[0]) == "false" {
-			tmap[k] = false
+			tempMap[k] = false
 		} else {
-			tmap[k] = v[0]
+			tempMap[k] = v[0]
 		}
 	}
 
 	if req.MultipartForm != nil {
 		for k, v := range req.MultipartForm.File {
-			tmap[k] = v[0]
+			tempMap[k] = v[0]
 		}
 	}
 
@@ -676,9 +719,9 @@ func ParseParams(req *http.Request) *Params {
 		err := json.NewDecoder(req.Body).Decode(&p.Values)
 		if err != nil {
 			log.Println("Content-Type is \"application/json\" but no valid json data received", err)
-			p.Values = tmap
+			p.Values = tempMap
 		}
-		for k, v := range tmap {
+		for k, v := range tempMap {
 			if _, pres := p.Values[k]; !pres {
 				p.Values[k] = v
 			}
@@ -702,13 +745,13 @@ func ParseParams(req *http.Request) *Params {
 				}
 				var err error
 				for err == nil {
-					vals := make([]interface{}, 0)
-					err = codec.NewDecoder(buff, &mh).Decode(&vals)
+					paramValues := make([]interface{}, 0)
+					err = codec.NewDecoder(buff, &mh).Decode(&paramValues)
 					if err != nil && err != io.EOF {
 						log.Println("Failed decoding msgpack", err)
 					} else {
-						for i := len(vals) - 1; i >= 1; i -= 2 {
-							p.Values[string(vals[i-1].([]byte))] = vals[i]
+						for i := len(paramValues) - 1; i >= 1; i -= 2 {
+							p.Values[string(paramValues[i-1].([]byte))] = paramValues[i]
 						}
 					}
 				}
@@ -716,20 +759,20 @@ func ParseParams(req *http.Request) *Params {
 		} else {
 			p.Values = make(map[string]interface{}, 0)
 		}
-		for k, v := range tmap {
+		for k, v := range tempMap {
 			if _, pres := p.Values[k]; !pres {
 				p.Values[k] = v
 			}
 		}
 	} else {
-		p.Values = tmap
+		p.Values = tempMap
 	}
 
 	for k, v := range mux.Vars(req) {
 		const ID = "id"
 		if strings.Contains(k, ID) {
-			id, perr := strconv.ParseUint(v, 10, 64)
-			if perr != nil {
+			id, paramError := strconv.ParseUint(v, 10, 64)
+			if paramError != nil {
 				p.Values[k] = v
 			} else {
 				p.Values[k] = id
