@@ -34,7 +34,7 @@ const (
 	//DateTime is not recommended, rather use time.RFC3339
 	DateTime = "2006-01-02 15:04:05"
 
-	// HTMLDateTimeLocal is the format used by the input type datetime-local
+	//HTMLDateTimeLocal is the format used by the input type datetime-local
 	HTMLDateTimeLocal = "2006-01-02T15:04"
 )
 
@@ -59,7 +59,7 @@ type CustomTypeHandler func(field *reflect.Value, value interface{})
 //CustomTypeSetter is used when Imbue is called on an object to handle unknown types
 var CustomTypeSetter CustomTypeHandler
 
-//Get get param by key, return interface
+//Get the param by key, return interface
 func (p *Params) Get(key string) (interface{}, bool) {
 	keys := strings.Split(key, ".")
 	root := p.Values
@@ -499,7 +499,7 @@ func (p *Params) GetFileOk(key string) (*multipart.FileHeader, bool) {
 	return nil, false
 }
 
-//GetJSONOk get param by key, return map if string interface
+//GetJSONOk get param by key, return map of string interface
 func (p *Params) GetJSONOk(key string) (map[string]interface{}, bool) {
 	if v, ok := p.Get(key); ok {
 		if d, ok := v.(map[string]interface{}); ok {
@@ -518,7 +518,7 @@ func (p *Params) GetJSONOk(key string) (map[string]interface{}, bool) {
 	return jsonData, true
 }
 
-//GetJSON get param by key, return map if string interface
+//GetJSON get param by key, return map of string interface
 func (p *Params) GetJSON(key string) map[string]interface{} {
 	data, _ := p.GetJSONOk(key)
 	return data
@@ -740,10 +740,10 @@ func ParseParams(req *http.Request) *Params {
 	}
 
 	for k, v := range mux.Vars(req) {
-		const ID = "id"
-		if strings.Contains(k, ID) {
-			id, paramError := strconv.ParseUint(v, 10, 64)
-			if paramError != nil {
+		const keyID = "id"
+		if strings.Contains(k, keyID) {
+			id, err := strconv.ParseUint(v, 10, 64)
+			if err != nil {
 				p.Values[k] = v
 			} else {
 				p.Values[k] = id
@@ -770,10 +770,10 @@ func MakeHTTPRouterParsedReq(fn httprouter.Handle) httprouter.Handle {
 		r = r.WithContext(context.WithValue(r.Context(), parametersKeyName, ParseParams(r)))
 		params := GetParams(r)
 		for _, param := range p {
-			const ID = "id"
-			if strings.Contains(param.Key, ID) {
-				id, paramError := strconv.ParseUint(param.Value, 10, 64)
-				if paramError != nil {
+			const keyID = "id"
+			if strings.Contains(param.Key, keyID) {
+				id, err := strconv.ParseUint(param.Value, 10, 64)
+				if err != nil {
 					params.Values[param.Key] = param.Value
 				} else {
 					params.Values[param.Key] = id
