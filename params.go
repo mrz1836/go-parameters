@@ -8,9 +8,6 @@ import (
 	"context"
 	"encoding/base64"
 	"encoding/json"
-	"github.com/gorilla/mux"
-	"github.com/julienschmidt/httprouter"
-	"github.com/ugorji/go/codec"
 	"io"
 	"io/ioutil"
 	"log"
@@ -21,6 +18,10 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/gorilla/mux"
+	"github.com/julienschmidt/httprouter"
+	"github.com/ugorji/go/codec"
 )
 
 //Constants for parameters package
