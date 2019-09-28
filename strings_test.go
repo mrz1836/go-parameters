@@ -2,7 +2,7 @@ package parameters
 
 import "testing"
 
-//TestCamelCaseToSnakeCase
+// TestCamelCaseToSnakeCase
 func TestCamelCaseToSnakeCase(t *testing.T) {
 	entries := map[string]string{
 		"ID":          "id",
@@ -23,7 +23,7 @@ func TestCamelCaseToSnakeCase(t *testing.T) {
 	}
 }
 
-//TestSnakeCaseToCamelCase
+// TestSnakeCaseToCamelCase
 func TestSnakeCaseToCamelCase(t *testing.T) {
 	entries := map[string]string{
 		"id":           "ID",

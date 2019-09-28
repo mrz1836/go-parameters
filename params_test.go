@@ -10,7 +10,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
-//TestParseJSONBody
+// TestParseJSONBody
 func TestParseJSONBody(t *testing.T) {
 	body := "{ \"test\": true }"
 	r, err := http.NewRequest("POST", "test", strings.NewReader(body))
@@ -19,7 +19,7 @@ func TestParseJSONBody(t *testing.T) {
 	}
 	r.Header.Set("Content-Type", "application/json")
 
-	r = r.WithContext(context.WithValue(r.Context(), parametersKeyName, ParseParams(r)))
+	r = r.WithContext(context.WithValue(r.Context(), ParametersKeyName, ParseParams(r)))
 
 	params := GetParams(r)
 
@@ -32,7 +32,7 @@ func TestParseJSONBody(t *testing.T) {
 	}
 }
 
-//TestParseJSONBodyContentType
+// TestParseJSONBodyContentType
 func TestParseJSONBodyContentType(t *testing.T) {
 	body := "{ \"test\": true }"
 	r, err := http.NewRequest("POST", "test", strings.NewReader(body))
@@ -41,7 +41,7 @@ func TestParseJSONBodyContentType(t *testing.T) {
 	}
 	r.Header.Set("Content-Type", "application/json; charset=utf8")
 
-	r = r.WithContext(context.WithValue(r.Context(), parametersKeyName, ParseParams(r)))
+	r = r.WithContext(context.WithValue(r.Context(), ParametersKeyName, ParseParams(r)))
 
 	params := GetParams(r)
 
@@ -54,7 +54,7 @@ func TestParseJSONBodyContentType(t *testing.T) {
 	}
 }
 
-//TestParseNestedJSONBody
+// TestParseNestedJSONBody
 func TestParseNestedJSONBody(t *testing.T) {
 	body := "{ \"test\": true, \"coord\": { \"lat\": 50.505, \"lon\": 10.101 }}"
 	r, err := http.NewRequest("POST", "test", strings.NewReader(body))
@@ -63,7 +63,7 @@ func TestParseNestedJSONBody(t *testing.T) {
 	}
 	r.Header.Set("Content-Type", "application/json")
 
-	r = r.WithContext(context.WithValue(r.Context(), parametersKeyName, ParseParams(r)))
+	r = r.WithContext(context.WithValue(r.Context(), ParametersKeyName, ParseParams(r)))
 
 	params := GetParams(r)
 
@@ -115,7 +115,7 @@ func TestParseNestedJSONBody(t *testing.T) {
 	}
 }
 
-//TestParseGET
+// TestParseGET
 func TestParseGET(t *testing.T) {
 	body := ""
 	r, err := http.NewRequest("GET", "test?test=true", strings.NewReader(body))
@@ -123,7 +123,7 @@ func TestParseGET(t *testing.T) {
 		t.Fatal("Could not build request", err)
 	}
 
-	r = r.WithContext(context.WithValue(r.Context(), parametersKeyName, ParseParams(r)))
+	r = r.WithContext(context.WithValue(r.Context(), ParametersKeyName, ParseParams(r)))
 
 	params := GetParams(r)
 
@@ -136,7 +136,7 @@ func TestParseGET(t *testing.T) {
 	}
 }
 
-//TestParsePOST
+// TestParsePOST
 func TestParsePOST(t *testing.T) {
 	body := "test=true"
 	r, err := http.NewRequest("POST", "test", strings.NewReader(body))
@@ -145,7 +145,7 @@ func TestParsePOST(t *testing.T) {
 	}
 	r.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
-	r = r.WithContext(context.WithValue(r.Context(), parametersKeyName, ParseParams(r)))
+	r = r.WithContext(context.WithValue(r.Context(), ParametersKeyName, ParseParams(r)))
 
 	params := GetParams(r)
 
@@ -158,7 +158,7 @@ func TestParsePOST(t *testing.T) {
 	}
 }
 
-//TestParsePUT
+// TestParsePUT
 func TestParsePUT(t *testing.T) {
 	body := "test=true"
 	r, err := http.NewRequest("PUT", "test", strings.NewReader(body))
@@ -167,7 +167,7 @@ func TestParsePUT(t *testing.T) {
 	}
 	r.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
-	r = r.WithContext(context.WithValue(r.Context(), parametersKeyName, ParseParams(r)))
+	r = r.WithContext(context.WithValue(r.Context(), ParametersKeyName, ParseParams(r)))
 
 	params := GetParams(r)
 
@@ -180,7 +180,7 @@ func TestParsePUT(t *testing.T) {
 	}
 }
 
-//TestParsePostUrlJSON
+// TestParsePostUrlJSON
 func TestParsePostUrlJSON(t *testing.T) {
 	body := "{\"test\":true}"
 	r, err := http.NewRequest("PUT", "test?test=false&id=1", strings.NewReader(body))
@@ -189,7 +189,7 @@ func TestParsePostUrlJSON(t *testing.T) {
 	}
 	r.Header.Set("Content-Type", "application/json")
 
-	r = r.WithContext(context.WithValue(r.Context(), parametersKeyName, ParseParams(r)))
+	r = r.WithContext(context.WithValue(r.Context(), ParametersKeyName, ParseParams(r)))
 
 	params := GetParams(r)
 
@@ -210,7 +210,7 @@ func TestParsePostUrlJSON(t *testing.T) {
 	}
 }
 
-//TestParseJSONBodyMux
+// TestParseJSONBodyMux
 func TestParseJSONBodyMux(t *testing.T) {
 	body := "{ \"test\": true }"
 	r, err := http.NewRequest("POST", "/test/42", strings.NewReader(body))
@@ -221,7 +221,7 @@ func TestParseJSONBodyMux(t *testing.T) {
 	m := mux.NewRouter()
 	m.KeepContext = true
 	m.HandleFunc("/test/{id:[0-9]+}", func(w http.ResponseWriter, r *http.Request) {
-		r = r.WithContext(context.WithValue(r.Context(), parametersKeyName, ParseParams(r)))
+		r = r.WithContext(context.WithValue(r.Context(), ParametersKeyName, ParseParams(r)))
 
 		params := GetParams(r)
 
@@ -249,7 +249,7 @@ func TestParseJSONBodyMux(t *testing.T) {
 	m.ServeHTTP(nil, r)
 }
 
-//TestImbue
+// TestImbue
 func TestImbue(t *testing.T) {
 	body := "test=true&keys=this,that,something&values=1,2,3"
 	r, err := http.NewRequest("PUT", "test", strings.NewReader(body))
@@ -258,7 +258,7 @@ func TestImbue(t *testing.T) {
 	}
 	r.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
-	r = r.WithContext(context.WithValue(r.Context(), parametersKeyName, ParseParams(r)))
+	r = r.WithContext(context.WithValue(r.Context(), ParametersKeyName, ParseParams(r)))
 
 	params := GetParams(r)
 
@@ -289,7 +289,7 @@ func TestImbue(t *testing.T) {
 	}
 }
 
-//TestImbueTime
+// TestImbueTime
 func TestImbueTime(t *testing.T) {
 	body := "test=true&created_at=2016-06-07T00:30Z&remind_on=2016-07-17"
 	r, err := http.NewRequest("PUT", "test", strings.NewReader(body))
@@ -298,7 +298,7 @@ func TestImbueTime(t *testing.T) {
 	}
 	r.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
-	r = r.WithContext(context.WithValue(r.Context(), parametersKeyName, ParseParams(r)))
+	r = r.WithContext(context.WithValue(r.Context(), ParametersKeyName, ParseParams(r)))
 
 	params := GetParams(r)
 
@@ -324,7 +324,7 @@ func TestImbueTime(t *testing.T) {
 	}
 }
 
-//TestHasAll
+// TestHasAll
 func TestHasAll(t *testing.T) {
 	body := "test=true&keys=this,that,something&values=1,2,3"
 	r, err := http.NewRequest("PUT", "test", strings.NewReader(body))
@@ -333,7 +333,7 @@ func TestHasAll(t *testing.T) {
 	}
 	r.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
-	r = r.WithContext(context.WithValue(r.Context(), parametersKeyName, ParseParams(r)))
+	r = r.WithContext(context.WithValue(r.Context(), ParametersKeyName, ParseParams(r)))
 
 	params := GetParams(r)
 	//Test All
@@ -359,7 +359,7 @@ func TestHasAll(t *testing.T) {
 	}
 }
 
-//TestParseEmpty test some garbage input, ids= "" (empty string) Should either be not ok, or empty slice
+// TestParseEmpty test some garbage input, ids= "" (empty string) Should either be not ok, or empty slice
 func TestParseEmpty(t *testing.T) {
 	body := "{\"test\":true}"
 	r, err := http.NewRequest("PUT", "test?ids=", strings.NewReader(body))
@@ -368,7 +368,7 @@ func TestParseEmpty(t *testing.T) {
 	}
 	r.Header.Set("Content-Type", "application/json")
 
-	r = r.WithContext(context.WithValue(r.Context(), parametersKeyName, ParseParams(r)))
+	r = r.WithContext(context.WithValue(r.Context(), ParametersKeyName, ParseParams(r)))
 
 	params := GetParams(r)
 
@@ -382,7 +382,7 @@ func TestParseEmpty(t *testing.T) {
 	}
 }
 
-//TestNegativeUint test Uint64 returns not ok for negative values
+// TestNegativeUint test Uint64 returns not ok for negative values
 func TestNegativeUint(t *testing.T) {
 	body := "{\"id\":-1}"
 	r, err := http.NewRequest("PUT", "test", strings.NewReader(body))
@@ -391,7 +391,7 @@ func TestNegativeUint(t *testing.T) {
 	}
 	r.Header.Set("Content-Type", "application/json")
 
-	r = r.WithContext(context.WithValue(r.Context(), parametersKeyName, ParseParams(r)))
+	r = r.WithContext(context.WithValue(r.Context(), ParametersKeyName, ParseParams(r)))
 
 	params := GetParams(r)
 
@@ -408,7 +408,7 @@ func TestNegativeUint(t *testing.T) {
 	}
 	r.Header.Set("Content-Type", "application/json")
 
-	r = r.WithContext(context.WithValue(r.Context(), parametersKeyName, ParseParams(r)))
+	r = r.WithContext(context.WithValue(r.Context(), ParametersKeyName, ParseParams(r)))
 
 	params = GetParams(r)
 
