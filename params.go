@@ -654,7 +654,10 @@ func contains(haystack []string, needle string) bool {
 
 // GetParams get parameters
 func GetParams(req *http.Request) *Params {
-	params := req.Context().Value(ParametersKeyName).(*Params)
+	params, ok := req.Context().Value(ParametersKeyName).(*Params)
+	if !ok {
+		return nil
+	}
 	return params
 }
 
