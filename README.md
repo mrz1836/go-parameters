@@ -71,20 +71,34 @@ $ go test -bench . -benchmem
 Read more about this Go project's [code standards](CODE_STANDARDS.md).
 
 ## Usage
-todo: @mrz1836
 View the [examples](examples/examples.go)
 
 Basic implementation:
-todo: @mrz1836
 ```golang
 package main
 
 import (
+    "fmt"
+	"log"
+	"net/http"
 
+	"github.com/julienschmidt/httprouter"
+	"github.com/mrz1836/go-parameters"
 )
 
-func main() {
+func Hello(w http.ResponseWriter, req *http.Request) {
 
+	params := parameters.GetParams(req)
+
+	name := params.GetStringOk("name")
+
+	_, _ = fmt.Fprintf(w, `{"hello":"%s"}`, name)
+}
+
+func main() {
+    router := httprouter.New()
+	router.GET("/hello/:name", parameters.GeneralJSONResponse(Hello))
+	log.Fatal(http.ListenAndServe(":8080", router))
 }
 ```
 
