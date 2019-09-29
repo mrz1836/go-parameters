@@ -3,7 +3,7 @@
 
 | | | | | | | |
 |-|-|-|-|-|-|-|
-| ![License](https://img.shields.io/github/license/mrz1836/go-parameters.svg?style=flat&p=1) | [![Report](https://goreportcard.com/badge/github.com/mrz1836/go-parameters?style=flat&p=1)](https://goreportcard.com/report/github.com/mrz1836/go-parameters)  | [![Codacy Badge](https://api.codacy.com/project/badge/Grade/4859aa01ee8b435d9cd94711589f5086)](https://www.codacy.com/app/mrz1818/go-parameters?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=mrz1836/go-parameters&amp;utm_campaign=Badge_Grade) |  [![Build Status](https://travis-ci.com/mrz1836/go-parameters.svg?branch=master)](https://travis-ci.com/mrz1836/go-parameters)   |  [![standard-readme compliant](https://img.shields.io/badge/standard--readme-OK-green.svg?style=flat)](https://github.com/RichardLitt/standard-readme) | [![Release](https://img.shields.io/github/release-pre/mrz1836/go-parameters.svg?style=flat)](https://github.com/mrz1836/go-parameters/releases) | [![GoDoc](https://godoc.org/github.com/mrz1836/go-parameters?status.svg&style=flat)](https://godoc.org/github.com/mrz1836/go-parameters) |
+| ![License](https://img.shields.io/github/license/mrz1836/go-parameters.svg?style=flat&p=1) | [![Report](https://goreportcard.com/badge/github.com/mrz1836/go-parameters?style=flat&p=1)](https://goreportcard.com/report/github.com/mrz1836/go-parameters)  | [![Codacy Badge](https://api.codacy.com/project/badge/Grade/4859aa01ee8b435d9cd94711589f5086)](https://www.codacy.com/app/mrz1818/go-parameters?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=mrz1836/go-parameters&amp;utm_campaign=Badge_Grade) |  [![Build Status](https://travis-ci.org/mrz1836/go-parameters.svg?branch=master)](https://travis-ci.org/mrz1836/go-parameters)   |  [![standard-readme compliant](https://img.shields.io/badge/standard--readme-OK-green.svg?style=flat)](https://github.com/RichardLitt/standard-readme) | [![Release](https://img.shields.io/github/release-pre/mrz1836/go-parameters.svg?style=flat)](https://github.com/mrz1836/go-parameters/releases) | [![GoDoc](https://godoc.org/github.com/mrz1836/go-parameters?status.svg&style=flat)](https://godoc.org/github.com/mrz1836/go-parameters) |
 
 ## Table of Contents
 - [Installation](#installation)
@@ -46,7 +46,7 @@ You can view the generated [documentation here](https://godoc.org/github.com/mrz
 - `GetParams()` parses parameters only once
 
 ## Examples & Tests
-All unit tests and [examples](examples/examples.go) run via [Travis CI](https://travis-ci.com/mrz1836/go-parameters) and uses [Go version 1.13.x](https://golang.org/doc/go1.13). View the [deployment configuration file](.travis.yml).
+All unit tests and [examples](examples/examples.go) run via [Travis CI](https://travis-ci.org/mrz1836/go-parameters) and uses [Go version 1.13.x](https://golang.org/doc/go1.13). View the [deployment configuration file](.travis.yml).
 
 Run all tests (including integration tests)
 ```bash
