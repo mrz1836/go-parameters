@@ -26,12 +26,6 @@
 $ go get -u github.com/mrz1836/go-parameters
 ```
 
-Updating dependencies in **go-parameters**:
-```bash
-$ cd ../go-parameters
-$ dep ensure -update -v
-```
-
 ### Package Dependencies
 - Julien Schmidt's [httprouter](https://github.com/julienschmidt/httprouter) package.
 - Gorilla's [mux](https://github.com/gorilla/mux) package.
