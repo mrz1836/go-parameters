@@ -84,7 +84,7 @@ func (p *Params) GetFloatOk(key string) (float64, bool) {
 		val, err = strconv.ParseFloat(stringValue, 64)
 		ok = err == nil
 	}
-	if ok {
+	if ok && val != nil {
 		return val.(float64), true
 	}
 	return 0, false

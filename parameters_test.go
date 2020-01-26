@@ -220,6 +220,24 @@ func TestParams_GetFloatOk(t *testing.T) {
 	}
 }
 
+// TestParams_GetFloatOk2
+func TestParams_GetFloatOk2(t *testing.T) {
+	body := ""
+	r, err := http.NewRequest("GET", "/test?test=null", strings.NewReader(body))
+	if err != nil {
+		t.Fatal("Could not build request", err)
+	}
+
+	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
+
+	params := GetParams(r)
+
+	val, ok := params.GetFloatOk("test")
+	if val != 0 {
+		t.Fatal("failed getting float value", val, ok)
+	}
+}
+
 // TestParams_GetIntOk
 func TestParams_GetIntOk(t *testing.T) {
 	body := ""
