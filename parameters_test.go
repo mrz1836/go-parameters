@@ -441,7 +441,7 @@ func TestGetParams_ParseJSONBodyMux(t *testing.T) {
 	}
 	r.Header.Set("Content-Type", "application/json")
 	m := mux.NewRouter()
-	m.KeepContext = true
+	// m.KeepContext = true
 	m.HandleFunc("/test/{id:[0-9]+}", func(w http.ResponseWriter, r *http.Request) {
 		r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
 
@@ -557,7 +557,7 @@ func TestHasAll(t *testing.T) {
 	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
 
 	params := GetParams(r)
-	//Test All
+	// Test All
 	if ok, missing := params.HasAll("test", "keys", "values"); !ok || len(missing) > 0 {
 		t.Fatal("Params should have all keys, could not find", missing)
 	}
