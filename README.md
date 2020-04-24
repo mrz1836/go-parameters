@@ -2,7 +2,7 @@
 **go-parameters** is a parameter multi-tool that parses json, msg pack, or multi-part form data into a parameters object.
 
 [![Go](https://img.shields.io/github/go-mod/go-version/mrz1836/go-parameters)](https://golang.org/)
-[![Build Status](https://travis-ci.org/mrz1836/go-parameters.svg?branch=master)](https://travis-ci.org/mrz1836/go-parameters)
+[![Build Status](https://travis-ci.com/mrz1836/go-parameters.svg?branch=master)](https://travis-ci.com/mrz1836/go-parameters)
 [![Report](https://goreportcard.com/badge/github.com/mrz1836/go-parameters?style=flat&p=1)](https://goreportcard.com/report/github.com/mrz1836/go-parameters)
 [![Release](https://img.shields.io/github/release-pre/mrz1836/go-parameters.svg?style=flat)](https://github.com/mrz1836/go-parameters/releases)
 [![GoDoc](https://godoc.org/github.com/mrz1836/go-parameters?status.svg&style=flat)](https://pkg.go.dev/github.com/mrz1836/go-parameters)
