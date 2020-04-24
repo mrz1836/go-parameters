@@ -25,6 +25,9 @@
 $ go get -u github.com/mrz1836/go-parameters
 ```
 
+## Documentation
+You can view the generated [documentation here](https://pkg.go.dev/github.com/mrz1836/go-parameters).
+
 ### Features
 - Uses the fastest router: Julien Schmidt's [httprouter](https://github.com/julienschmidt/httprouter)
 - Works with `json`, `msgpack`, and `multi-part` forms
@@ -32,9 +35,6 @@ $ go get -u github.com/mrz1836/go-parameters
 - Handler methods like `MakeParsedReq()` for `httprouter` use
 - `Imbue` and `Permit` helper methods
 - `GetParams()` parses parameters only once
-
-## Documentation
-You can view the generated [documentation here](https://pkg.go.dev/github.com/mrz1836/go-parameters).
 
 <details>
 <summary><strong><code>Package Dependencies</code></strong></summary>
