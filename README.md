@@ -40,8 +40,8 @@ You can view the generated [documentation here](https://pkg.go.dev/github.com/mr
 <details>
 <summary><strong><code>Package Dependencies</code></strong></summary>
 
-- Julien Schmidt's [httprouter](https://github.com/julienschmidt/httprouter) package.
 - Gorilla's [mux](https://github.com/gorilla/mux) package.
+- Julien Schmidt's [httprouter](https://github.com/julienschmidt/httprouter) package.
 - Ugorji's [go](https://github.com/ugorji/go) package.
 </details>
 
