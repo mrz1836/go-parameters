@@ -20,7 +20,7 @@ git:
 notifications:
  email: false
 
-# Run all scripts
+# Run all commands
 script:
  - make test-travis
 
