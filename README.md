@@ -52,7 +52,7 @@ View the generated [documentation](https://pkg.go.dev/github.com/mrz1836/go-para
 
 - Gorilla's [mux](https://github.com/gorilla/mux) package.
 - Julien Schmidt's [httprouter](https://github.com/julienschmidt/httprouter) package.
-- Ugorji's [go](https://github.com/ugorji/go) package.
+- Ugorji's [go codec](https://github.com/ugorji/go) package.
 </details>
 
 <details>
@@ -183,11 +183,6 @@ All kinds of contributions are welcome :raised_hands:!
 The most basic way to show your support is to star :star2: the project, or to raise issues :speech_balloon:. 
 You can also support this project by [becoming a sponsor on GitHub](https://github.com/sponsors/mrz1836) :clap: 
 or by making a [**bitcoin donation**](https://mrz1818.com/?tab=tips&af=go-sanitize) to ensure this journey continues indefinitely! :rocket:
-
-### Credits
-- Julien Schmidt's [httprouter](https://github.com/julienschmidt/httprouter) package.
-- Gorilla's [mux](https://github.com/gorilla/mux) package.
-- Ugorji's [go](https://github.com/ugorji/go) package.
 
 <br/>
 
