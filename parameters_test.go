@@ -158,6 +158,11 @@ func TestParams_GetStringOk(t *testing.T) {
 	} else if val != "string" {
 		t.Fatal("failed getting string value", val, ok)
 	}
+
+	val = params.GetString("test")
+	if val != "string" {
+		t.Fatal("failed getting string value", val, ok)
+	}
 }
 
 // TestParams_GetBoolOk
@@ -219,6 +224,11 @@ func TestParams_GetBytesOk(t *testing.T) {
 	params := GetParams(r)
 
 	val, ok := params.GetBytesOk("test")
+	if !ok {
+		t.Fatal("failed getting bytes parameter", val, ok)
+	}
+
+	val = params.GetBytes("test")
 	if !ok {
 		t.Fatal("failed getting bytes parameter", val, ok)
 	}
