@@ -715,7 +715,7 @@ func ParseParams(req *http.Request) *Params {
 				}
 			} else {
 				if p.Values == nil {
-					p.Values = make(map[string]interface{}, 0)
+					p.Values = make(map[string]interface{})
 				}
 				var err error
 				for err == nil {
@@ -731,7 +731,7 @@ func ParseParams(req *http.Request) *Params {
 				}
 			}
 		} else {
-			p.Values = make(map[string]interface{}, 0)
+			p.Values = make(map[string]interface{})
 		}
 		for k, v := range tempMap {
 			if _, pres := p.Values[k]; !pres {
