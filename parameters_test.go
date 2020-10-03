@@ -2,6 +2,8 @@ package parameters
 
 import (
 	"context"
+	"fmt"
+	"math"
 	"net/http"
 	"strings"
 	"testing"
@@ -10,10 +12,12 @@ import (
 	"github.com/gorilla/mux"
 )
 
+const testJSONParam = `{ "test": true }`
+
 // TestGetParams_ParseJSONBody
 func TestGetParams_ParseJSONBody(t *testing.T) {
-	body := "{ \"test\": true }"
-	r, err := http.NewRequest("POST", "test", strings.NewReader(body))
+
+	r, err := http.NewRequestWithContext(context.Background(), "POST", "test", strings.NewReader(testJSONParam))
 	if err != nil {
 		t.Fatal("Could not build request", err)
 	}
@@ -34,8 +38,8 @@ func TestGetParams_ParseJSONBody(t *testing.T) {
 
 // TestGetParams_ParseJSONBodyContentType
 func TestGetParams_ParseJSONBodyContentType(t *testing.T) {
-	body := "{ \"test\": true }"
-	r, err := http.NewRequest("POST", "test", strings.NewReader(body))
+
+	r, err := http.NewRequestWithContext(context.Background(), "POST", "test", strings.NewReader(testJSONParam))
 	if err != nil {
 		t.Fatal("Could not build request", err)
 	}
@@ -57,7 +61,7 @@ func TestGetParams_ParseJSONBodyContentType(t *testing.T) {
 // TestGetParams_ParseNestedJSONBody
 func TestGetParams_ParseNestedJSONBody(t *testing.T) {
 	body := "{ \"test\": true, \"coord\": { \"lat\": 50.505, \"lon\": 10.101 }}"
-	r, err := http.NewRequest("POST", "test", strings.NewReader(body))
+	r, err := http.NewRequestWithContext(context.Background(), "POST", "test", strings.NewReader(body))
 	if err != nil {
 		t.Fatal("Could not build request", err)
 	}
@@ -118,7 +122,7 @@ func TestGetParams_ParseNestedJSONBody(t *testing.T) {
 // TestGetParams
 func TestGetParams(t *testing.T) {
 	body := ""
-	r, err := http.NewRequest("GET", "test?test=true", strings.NewReader(body))
+	r, err := http.NewRequestWithContext(context.Background(), "GET", "test?test=true", strings.NewReader(body))
 	if err != nil {
 		t.Fatal("Could not build request", err)
 	}
@@ -139,7 +143,7 @@ func TestGetParams(t *testing.T) {
 // TestParams_GetStringOk
 func TestParams_GetStringOk(t *testing.T) {
 	body := ""
-	r, err := http.NewRequest("GET", "/test?test=string", strings.NewReader(body))
+	r, err := http.NewRequestWithContext(context.Background(), "GET", "/test?test=string", strings.NewReader(body))
 	if err != nil {
 		t.Fatal("Could not build request", err)
 	}
@@ -159,7 +163,27 @@ func TestParams_GetStringOk(t *testing.T) {
 // TestParams_GetBoolOk
 func TestParams_GetBoolOk(t *testing.T) {
 	body := ""
-	r, err := http.NewRequest("GET", "/test?test=true", strings.NewReader(body))
+	r, err := http.NewRequestWithContext(context.Background(), "GET", "/test?test=true", strings.NewReader(body))
+	if err != nil {
+		t.Fatal("Could not build request", err)
+	}
+
+	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
+
+	params := GetParams(r)
+
+	val, ok := params.GetBoolOk("test")
+	if !ok {
+		t.Fatal("failed getting bool parameter", val, ok)
+	} else if !val {
+		t.Fatal("failed getting bool value", val, ok)
+	}
+}
+
+// TestParams_GetBoolInt
+func TestParams_GetBoolInt(t *testing.T) {
+	body := ""
+	r, err := http.NewRequestWithContext(context.Background(), "GET", "/test?test=1", strings.NewReader(body))
 	if err != nil {
 		t.Fatal("Could not build request", err)
 	}
@@ -185,7 +209,7 @@ func TestParams_GetBytesOk(t *testing.T) {
 	testString := string(testBytes)
 
 	body := ""
-	r, err := http.NewRequest("GET", "/test?test="+testString, strings.NewReader(body))
+	r, err := http.NewRequestWithContext(context.Background(), "GET", "/test?test="+testString, strings.NewReader(body))
 	if err != nil {
 		t.Fatal("Could not build request", err)
 	}
@@ -203,7 +227,7 @@ func TestParams_GetBytesOk(t *testing.T) {
 // TestParams_GetFloatOk
 func TestParams_GetFloatOk(t *testing.T) {
 	body := ""
-	r, err := http.NewRequest("GET", "/test?test=123.1234", strings.NewReader(body))
+	r, err := http.NewRequestWithContext(context.Background(), "GET", "/test?test=123.1234", strings.NewReader(body))
 	if err != nil {
 		t.Fatal("Could not build request", err)
 	}
@@ -218,12 +242,17 @@ func TestParams_GetFloatOk(t *testing.T) {
 	} else if val != 123.1234 {
 		t.Fatal("failed getting float value", val, ok)
 	}
+
+	val = params.GetFloat("test")
+	if val != 123.1234 {
+		t.Fatal("failed getting float value", val, ok)
+	}
 }
 
 // TestParams_GetFloatOk2
 func TestParams_GetFloatOk2(t *testing.T) {
 	body := ""
-	r, err := http.NewRequest("GET", "/test?test=null", strings.NewReader(body))
+	r, err := http.NewRequestWithContext(context.Background(), "GET", "/test?test=null", strings.NewReader(body))
 	if err != nil {
 		t.Fatal("Could not build request", err)
 	}
@@ -241,7 +270,7 @@ func TestParams_GetFloatOk2(t *testing.T) {
 // TestParams_GetIntOk
 func TestParams_GetIntOk(t *testing.T) {
 	body := ""
-	r, err := http.NewRequest("GET", "/test?test=123", strings.NewReader(body))
+	r, err := http.NewRequestWithContext(context.Background(), "GET", "/test?test=123", strings.NewReader(body))
 	if err != nil {
 		t.Fatal("Could not build request", err)
 	}
@@ -256,12 +285,17 @@ func TestParams_GetIntOk(t *testing.T) {
 	} else if val != 123 {
 		t.Fatal("failed getting int value", val, ok)
 	}
+
+	val = params.GetInt("test")
+	if val != 123 {
+		t.Fatal("failed getting int value", val, ok)
+	}
 }
 
 // TestParams_GetInt8Ok
 func TestParams_GetInt8Ok(t *testing.T) {
 	body := ""
-	r, err := http.NewRequest("GET", "/test?test=123", strings.NewReader(body))
+	r, err := http.NewRequestWithContext(context.Background(), "GET", "/test?test=123", strings.NewReader(body))
 	if err != nil {
 		t.Fatal("Could not build request", err)
 	}
@@ -278,10 +312,46 @@ func TestParams_GetInt8Ok(t *testing.T) {
 	}
 }
 
+// TestParams_GetInt8TooSmall
+func TestParams_GetInt8TooSmall(t *testing.T) {
+	body := ""
+	r, err := http.NewRequestWithContext(context.Background(), "GET", "/test?test=-300", strings.NewReader(body))
+	if err != nil {
+		t.Fatal("Could not build request", err)
+	}
+
+	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
+
+	params := GetParams(r)
+
+	val := params.GetInt8("test")
+	if val != 0 {
+		t.Fatal("expected to get 0", val)
+	}
+}
+
+// TestParams_GetInt8TooBig
+func TestParams_GetInt8TooBig(t *testing.T) {
+	body := ""
+	r, err := http.NewRequestWithContext(context.Background(), "GET", "/test?test=300", strings.NewReader(body))
+	if err != nil {
+		t.Fatal("Could not build request", err)
+	}
+
+	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
+
+	params := GetParams(r)
+
+	val := params.GetInt8("test")
+	if val != 0 {
+		t.Fatal("expected to get 0", val)
+	}
+}
+
 // TestParams_GetInt16Ok
 func TestParams_GetInt16Ok(t *testing.T) {
 	body := ""
-	r, err := http.NewRequest("GET", "/test?test=123", strings.NewReader(body))
+	r, err := http.NewRequestWithContext(context.Background(), "GET", "/test?test=123", strings.NewReader(body))
 	if err != nil {
 		t.Fatal("Could not build request", err)
 	}
@@ -296,12 +366,53 @@ func TestParams_GetInt16Ok(t *testing.T) {
 	} else if val != 123 {
 		t.Fatal("failed getting int value", val, ok)
 	}
+
+	val = params.GetInt16("test")
+	if val != 123 {
+		t.Fatal("failed getting int value", val, ok)
+	}
+}
+
+// TestParams_GetInt16TooSmall
+func TestParams_GetInt16TooSmall(t *testing.T) {
+	body := ""
+	r, err := http.NewRequestWithContext(context.Background(), "GET", "/test?test=-32769", strings.NewReader(body))
+	if err != nil {
+		t.Fatal("Could not build request", err)
+	}
+
+	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
+
+	params := GetParams(r)
+
+	val := params.GetInt16("test")
+	if val != 0 {
+		t.Fatal("expected to get 0", val)
+	}
+}
+
+// TestParams_GetInt16TooBig
+func TestParams_GetInt16TooBig(t *testing.T) {
+	body := ""
+	r, err := http.NewRequestWithContext(context.Background(), "GET", "/test?test=32769", strings.NewReader(body))
+	if err != nil {
+		t.Fatal("Could not build request", err)
+	}
+
+	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
+
+	params := GetParams(r)
+
+	val := params.GetInt16("test")
+	if val != 0 {
+		t.Fatal("expected to get 0", val)
+	}
 }
 
 // TestParams_GetInt32Ok
 func TestParams_GetInt32Ok(t *testing.T) {
 	body := ""
-	r, err := http.NewRequest("GET", "/test?test=123", strings.NewReader(body))
+	r, err := http.NewRequestWithContext(context.Background(), "GET", "/test?test=123", strings.NewReader(body))
 	if err != nil {
 		t.Fatal("Could not build request", err)
 	}
@@ -316,12 +427,53 @@ func TestParams_GetInt32Ok(t *testing.T) {
 	} else if val != 123 {
 		t.Fatal("failed getting int value", val, ok)
 	}
+
+	val = params.GetInt32("test")
+	if val != 123 {
+		t.Fatal("failed getting int value", val, ok)
+	}
+}
+
+// TestParams_GetInt32TooSmall
+func TestParams_GetInt32TooSmall(t *testing.T) {
+	body := ""
+	r, err := http.NewRequestWithContext(context.Background(), "GET", fmt.Sprintf("/test?test=%d", math.MinInt32-1), strings.NewReader(body))
+	if err != nil {
+		t.Fatal("Could not build request", err)
+	}
+
+	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
+
+	params := GetParams(r)
+
+	val := params.GetInt32("test")
+	if val != 0 {
+		t.Fatal("expected to get 0", val)
+	}
+}
+
+// TestParams_GetInt32TooBig
+func TestParams_GetInt32TooBig(t *testing.T) {
+	body := ""
+	r, err := http.NewRequestWithContext(context.Background(), "GET", fmt.Sprintf("/test?test=%d", math.MaxInt32+1), strings.NewReader(body))
+	if err != nil {
+		t.Fatal("Could not build request", err)
+	}
+
+	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
+
+	params := GetParams(r)
+
+	val := params.GetInt32("test")
+	if val != 0 {
+		t.Fatal("expected to get 0", val)
+	}
 }
 
 // TestParams_GetInt64Ok
 func TestParams_GetInt64Ok(t *testing.T) {
 	body := ""
-	r, err := http.NewRequest("GET", "/test?test=123", strings.NewReader(body))
+	r, err := http.NewRequestWithContext(context.Background(), "GET", "/test?test=123", strings.NewReader(body))
 	if err != nil {
 		t.Fatal("Could not build request", err)
 	}
@@ -336,12 +488,35 @@ func TestParams_GetInt64Ok(t *testing.T) {
 	} else if val != 123 {
 		t.Fatal("failed getting int value", val, ok)
 	}
+
+	val = params.GetInt64("test")
+	if val != 123 {
+		t.Fatal("failed getting int value", val, ok)
+	}
+}
+
+// TestParams_GetInt64TooSmall
+func TestParams_GetInt64TooSmall(t *testing.T) {
+	body := ""
+	r, err := http.NewRequestWithContext(context.Background(), "GET", fmt.Sprintf("/test?test=%d", 0), strings.NewReader(body))
+	if err != nil {
+		t.Fatal("Could not build request", err)
+	}
+
+	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
+
+	params := GetParams(r)
+
+	val := params.GetInt64("test")
+	if val != 0 {
+		t.Fatal("expected to get 0", val)
+	}
 }
 
 // TestParams_GetUint64Ok
 func TestParams_GetUint64Ok(t *testing.T) {
 	body := ""
-	r, err := http.NewRequest("GET", "/test?test=123", strings.NewReader(body))
+	r, err := http.NewRequestWithContext(context.Background(), "GET", "/test?test=123", strings.NewReader(body))
 	if err != nil {
 		t.Fatal("Could not build request", err)
 	}
@@ -361,7 +536,7 @@ func TestParams_GetUint64Ok(t *testing.T) {
 // TestGetParams_Post
 func TestGetParams_Post(t *testing.T) {
 	body := "test=true"
-	r, err := http.NewRequest("POST", "test", strings.NewReader(body))
+	r, err := http.NewRequestWithContext(context.Background(), "POST", "test", strings.NewReader(body))
 	if err != nil {
 		t.Fatal("Could not build request", err)
 	}
@@ -383,7 +558,7 @@ func TestGetParams_Post(t *testing.T) {
 // TestGetParams_Put
 func TestGetParams_Put(t *testing.T) {
 	body := "test=true"
-	r, err := http.NewRequest("PUT", "test", strings.NewReader(body))
+	r, err := http.NewRequestWithContext(context.Background(), "PUT", "test", strings.NewReader(body))
 	if err != nil {
 		t.Fatal("Could not build request", err)
 	}
@@ -404,8 +579,8 @@ func TestGetParams_Put(t *testing.T) {
 
 // TestGetParams_ParsePostUrlJSON
 func TestGetParams_ParsePostUrlJSON(t *testing.T) {
-	body := "{\"test\":true}"
-	r, err := http.NewRequest("PUT", "test?test=false&id=1", strings.NewReader(body))
+
+	r, err := http.NewRequestWithContext(context.Background(), "PUT", "test?test=false&id=1", strings.NewReader(testJSONParam))
 	if err != nil {
 		t.Fatal("Could not build request", err)
 	}
@@ -434,8 +609,8 @@ func TestGetParams_ParsePostUrlJSON(t *testing.T) {
 
 // TestGetParams_ParseJSONBodyMux
 func TestGetParams_ParseJSONBodyMux(t *testing.T) {
-	body := "{ \"test\": true }"
-	r, err := http.NewRequest("POST", "/test/42", strings.NewReader(body))
+
+	r, err := http.NewRequestWithContext(context.Background(), "POST", "/test/42", strings.NewReader(testJSONParam))
 	if err != nil {
 		t.Fatal("Could not build request", err)
 	}
@@ -474,7 +649,7 @@ func TestGetParams_ParseJSONBodyMux(t *testing.T) {
 // TestImbue
 func TestImbue(t *testing.T) {
 	body := "test=true&keys=this,that,something&values=1,2,3"
-	r, err := http.NewRequest("PUT", "test", strings.NewReader(body))
+	r, err := http.NewRequestWithContext(context.Background(), "PUT", "test", strings.NewReader(body))
 	if err != nil {
 		t.Fatal("Could not build request", err)
 	}
@@ -513,7 +688,7 @@ func TestImbue(t *testing.T) {
 // TestImbue_Time
 func TestImbue_Time(t *testing.T) {
 	body := "test=true&created_at=2016-06-07T00:30Z&remind_on=2016-07-17"
-	r, err := http.NewRequest("PUT", "test", strings.NewReader(body))
+	r, err := http.NewRequestWithContext(context.Background(), "PUT", "test", strings.NewReader(body))
 	if err != nil {
 		t.Fatal("Could not build request", err)
 	}
@@ -548,7 +723,7 @@ func TestImbue_Time(t *testing.T) {
 // TestHasAll
 func TestHasAll(t *testing.T) {
 	body := "test=true&keys=this,that,something&values=1,2,3"
-	r, err := http.NewRequest("PUT", "test", strings.NewReader(body))
+	r, err := http.NewRequestWithContext(context.Background(), "PUT", "test", strings.NewReader(body))
 	if err != nil {
 		t.Fatal("Could not build request", err)
 	}
@@ -582,8 +757,8 @@ func TestHasAll(t *testing.T) {
 
 // TestGetParams_ParseEmpty test some garbage input, ids= "" (empty string) Should either be not ok, or empty slice
 func TestGetParams_ParseEmpty(t *testing.T) {
-	body := "{\"test\":true}"
-	r, err := http.NewRequest("PUT", "test?ids=", strings.NewReader(body))
+
+	r, err := http.NewRequestWithContext(context.Background(), "PUT", "test?ids=", strings.NewReader(testJSONParam))
 	if err != nil {
 		t.Fatal("Could not build request", err)
 	}
@@ -604,7 +779,7 @@ func TestGetParams_ParseEmpty(t *testing.T) {
 // TestGetParams_NegativeUint test Uint64 returns not ok for negative values
 func TestGetParams_NegativeUint(t *testing.T) {
 	body := "{\"id\":-1}"
-	r, err := http.NewRequest("PUT", "test", strings.NewReader(body))
+	r, err := http.NewRequestWithContext(context.Background(), "PUT", "test", strings.NewReader(body))
 	if err != nil {
 		t.Fatal("Could not build request", err)
 	}
@@ -620,7 +795,7 @@ func TestGetParams_NegativeUint(t *testing.T) {
 	}
 
 	body = "{\"id\":1}"
-	r, err = http.NewRequest("PUT", "test", strings.NewReader(body))
+	r, err = http.NewRequestWithContext(context.Background(), "PUT", "test", strings.NewReader(body))
 	if err != nil {
 		t.Fatal("Could not build request", err)
 	}
