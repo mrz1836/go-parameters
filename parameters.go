@@ -8,6 +8,7 @@ import (
 	"context"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"io"
 	"io/ioutil"
 	"log"
@@ -710,7 +711,7 @@ func ParseParams(req *http.Request) *Params {
 			first := body[0]
 			if (first >= 0x80 && first <= 0x8f) || (first == 0xde || first == 0xdf) {
 				err := codec.NewDecoder(buff, &mh).Decode(&p.Values)
-				if err != nil && err != io.EOF {
+				if err != nil && errors.Is(err, io.EOF) {
 					log.Println("failed decoding msgpack:", err)
 				}
 			} else {
@@ -721,7 +722,7 @@ func ParseParams(req *http.Request) *Params {
 				for err == nil {
 					paramValues := make([]interface{}, 0)
 					err = codec.NewDecoder(buff, &mh).Decode(&paramValues)
-					if err != nil && err != io.EOF {
+					if err != nil && errors.Is(err, io.EOF) {
 						log.Println("failed decoding msgpack:", err)
 					} else {
 						for i := len(paramValues) - 1; i >= 1; i -= 2 {
