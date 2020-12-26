@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
+	"github.com/stretchr/testify/assert"
 )
 
 const testJSONParam = `{ "test": true }`
@@ -18,9 +19,9 @@ const testJSONParam = `{ "test": true }`
 func TestGetParams_ParseJSONBody(t *testing.T) {
 
 	r, err := http.NewRequestWithContext(context.Background(), "POST", "test", strings.NewReader(testJSONParam))
-	if err != nil {
-		t.Fatal("Could not build request", err)
-	}
+	assert.NoError(t, err)
+	assert.NotNil(t, r)
+
 	r.Header.Set("Content-Type", "application/json")
 
 	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
@@ -28,21 +29,15 @@ func TestGetParams_ParseJSONBody(t *testing.T) {
 	params := GetParams(r)
 
 	val, present := params.Get("test")
-	if !present {
-		t.Fatal("Key: 'test' not found")
-	}
-	if val != true {
-		t.Fatal("Value of 'test' should be 'true', got: ", val)
-	}
+	assert.Equal(t, true, present)
+	assert.Equal(t, true, val)
 }
 
 // TestGetParams_ParseJSONBodyContentType
 func TestGetParams_ParseJSONBodyContentType(t *testing.T) {
 
 	r, err := http.NewRequestWithContext(context.Background(), "POST", "test", strings.NewReader(testJSONParam))
-	if err != nil {
-		t.Fatal("Could not build request", err)
-	}
+	assert.NoError(t, err)
 	r.Header.Set("Content-Type", "application/json; charset=utf8")
 
 	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
@@ -50,21 +45,15 @@ func TestGetParams_ParseJSONBodyContentType(t *testing.T) {
 	params := GetParams(r)
 
 	val, present := params.Get("test")
-	if !present {
-		t.Fatal("Key: 'test' not found")
-	}
-	if val != true {
-		t.Fatal("Value of 'test' should be 'true', got: ", val)
-	}
+	assert.Equal(t, true, present)
+	assert.Equal(t, true, val)
 }
 
 // TestGetParams_ParseNestedJSONBody
 func TestGetParams_ParseNestedJSONBody(t *testing.T) {
 	body := "{ \"test\": true, \"coord\": { \"lat\": 50.505, \"lon\": 10.101 }}"
 	r, err := http.NewRequestWithContext(context.Background(), "POST", "test", strings.NewReader(body))
-	if err != nil {
-		t.Fatal("Could not build request", err)
-	}
+	assert.NoError(t, err)
 	r.Header.Set("Content-Type", "application/json")
 
 	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
@@ -72,137 +61,94 @@ func TestGetParams_ParseNestedJSONBody(t *testing.T) {
 	params := GetParams(r)
 
 	val, present := params.Get("test")
-	if !present {
-		t.Fatal("Key: 'test' not found")
-	}
-	if val != true {
-		t.Fatal("Value of 'test' should be 'true', got: ", val)
-	}
+	assert.Equal(t, true, present)
+	assert.Equal(t, true, val)
 
 	val, present = params.Get("coord")
-	if !present {
-		t.Fatal("Key: 'coord' not found")
-	}
+	assert.Equal(t, true, present)
 
 	coord := val.(map[string]interface{})
 
-	lat, present := coord["lat"]
-	if !present {
-		t.Fatal("Key: 'lat' not found")
-	}
-	if lat != 50.505 {
-		t.Fatal("Value of 'lat' should be 50.505, got: ", lat)
-	}
+	var lat interface{}
+	lat, present = coord["lat"]
+	assert.Equal(t, true, present)
+	assert.Equal(t, 50.505, lat)
 
 	lat, present = params.Get("coord.lat")
-	if !present {
-		t.Fatal("Nested Key: 'lat' not found")
-	}
-	if lat != 50.505 {
-		t.Fatal("Value of 'lat' should be 50.505, got: ", lat)
-	}
+	assert.Equal(t, true, present)
+	assert.Equal(t, 50.505, lat)
 
-	lon, present := coord["lon"]
-	if !present {
-		t.Fatal("Key: 'lon' not found")
-	}
-	if lon != 10.101 {
-		t.Fatal("Value of 'lon' should be 10.101, got: ", lon)
-	}
+	var lon interface{}
+	lon, present = coord["lon"]
+	assert.Equal(t, true, present)
+	assert.Equal(t, 10.101, lon)
 
 	lon, present = params.Get("coord.lon")
-	if !present {
-		t.Fatal("Nested Key: 'lon' not found")
-	}
-	if lon != 10.101 {
-		t.Fatal("Value of 'lon' should be 10.101, got: ", lon)
-	}
+	assert.Equal(t, true, present)
+	assert.Equal(t, 10.101, lon)
 }
 
 // TestGetParams
 func TestGetParams(t *testing.T) {
 	body := ""
 	r, err := http.NewRequestWithContext(context.Background(), "GET", "test?test=true", strings.NewReader(body))
-	if err != nil {
-		t.Fatal("Could not build request", err)
-	}
+	assert.NoError(t, err)
 
 	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
 
 	params := GetParams(r)
 
 	val, present := params.Get("test")
-	if !present {
-		t.Fatal("Key: 'test' not found")
-	}
-	if val != true {
-		t.Fatal("Value of 'test' should be 'true', got: ", val)
-	}
+	assert.Equal(t, true, present)
+	assert.Equal(t, true, val)
 }
 
 // TestParams_GetStringOk
 func TestParams_GetStringOk(t *testing.T) {
 	body := ""
 	r, err := http.NewRequestWithContext(context.Background(), "GET", "/test?test=string", strings.NewReader(body))
-	if err != nil {
-		t.Fatal("Could not build request", err)
-	}
+	assert.NoError(t, err)
 
 	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
 
 	params := GetParams(r)
 
 	val, ok := params.GetStringOk("test")
-	if !ok {
-		t.Fatal("failed getting string parameter", val, ok)
-	} else if val != "string" {
-		t.Fatal("failed getting string value", val, ok)
-	}
+	assert.Equal(t, true, ok)
+	assert.Equal(t, "string", val)
 
 	val = params.GetString("test")
-	if val != "string" {
-		t.Fatal("failed getting string value", val, ok)
-	}
+	assert.Equal(t, "string", val)
 }
 
 // TestParams_GetBoolOk
 func TestParams_GetBoolOk(t *testing.T) {
 	body := ""
 	r, err := http.NewRequestWithContext(context.Background(), "GET", "/test?test=true", strings.NewReader(body))
-	if err != nil {
-		t.Fatal("Could not build request", err)
-	}
+	assert.NoError(t, err)
 
 	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
 
 	params := GetParams(r)
 
 	val, ok := params.GetBoolOk("test")
-	if !ok {
-		t.Fatal("failed getting bool parameter", val, ok)
-	} else if !val {
-		t.Fatal("failed getting bool value", val, ok)
-	}
+	assert.Equal(t, true, ok)
+	assert.Equal(t, true, val)
 }
 
 // TestParams_GetBoolInt
 func TestParams_GetBoolInt(t *testing.T) {
 	body := ""
 	r, err := http.NewRequestWithContext(context.Background(), "GET", "/test?test=1", strings.NewReader(body))
-	if err != nil {
-		t.Fatal("Could not build request", err)
-	}
+	assert.NoError(t, err)
 
 	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
 
 	params := GetParams(r)
 
 	val, ok := params.GetBoolOk("test")
-	if !ok {
-		t.Fatal("failed getting bool parameter", val, ok)
-	} else if !val {
-		t.Fatal("failed getting bool value", val, ok)
-	}
+	assert.Equal(t, true, ok)
+	assert.Equal(t, true, val)
 }
 
 // TestParams_GetBytesOk
@@ -215,341 +161,258 @@ func TestParams_GetBytesOk(t *testing.T) {
 
 	body := ""
 	r, err := http.NewRequestWithContext(context.Background(), "GET", "/test?test="+testString, strings.NewReader(body))
-	if err != nil {
-		t.Fatal("Could not build request", err)
-	}
+	assert.NoError(t, err)
 
 	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
 
 	params := GetParams(r)
 
 	val, ok := params.GetBytesOk("test")
-	if !ok {
-		t.Fatal("failed getting bytes parameter", val, ok)
-	}
+	assert.Equal(t, true, ok)
+	assert.Equal(t, 75, len(val))
 
 	val = params.GetBytes("test")
-	if !ok {
-		t.Fatal("failed getting bytes parameter", val, ok)
-	}
+	assert.Equal(t, 75, len(val))
 }
 
 // TestParams_GetFloatOk
 func TestParams_GetFloatOk(t *testing.T) {
 	body := ""
 	r, err := http.NewRequestWithContext(context.Background(), "GET", "/test?test=123.1234", strings.NewReader(body))
-	if err != nil {
-		t.Fatal("Could not build request", err)
-	}
+	assert.NoError(t, err)
 
 	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
 
 	params := GetParams(r)
 
 	val, ok := params.GetFloatOk("test")
-	if !ok {
-		t.Fatal("failed getting float parameter", val, ok)
-	} else if val != 123.1234 {
-		t.Fatal("failed getting float value", val, ok)
-	}
+	assert.Equal(t, true, ok)
+	assert.Equal(t, 123.1234, val)
 
 	val = params.GetFloat("test")
-	if val != 123.1234 {
-		t.Fatal("failed getting float value", val, ok)
-	}
+	assert.Equal(t, 123.1234, val)
 }
 
 // TestParams_GetFloatOk2
 func TestParams_GetFloatOk2(t *testing.T) {
 	body := ""
 	r, err := http.NewRequestWithContext(context.Background(), "GET", "/test?test=null", strings.NewReader(body))
-	if err != nil {
-		t.Fatal("Could not build request", err)
-	}
+	assert.NoError(t, err)
 
 	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
 
 	params := GetParams(r)
 
 	val, ok := params.GetFloatOk("test")
-	if val != 0 {
-		t.Fatal("failed getting float value", val, ok)
-	}
+	assert.Equal(t, float64(0), val)
+	assert.Equal(t, true, ok)
 }
 
 // TestParams_GetIntOk
 func TestParams_GetIntOk(t *testing.T) {
 	body := ""
 	r, err := http.NewRequestWithContext(context.Background(), "GET", "/test?test=123", strings.NewReader(body))
-	if err != nil {
-		t.Fatal("Could not build request", err)
-	}
+	assert.NoError(t, err)
 
 	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
 
 	params := GetParams(r)
 
 	val, ok := params.GetIntOk("test")
-	if !ok {
-		t.Fatal("failed getting int parameter", val, ok)
-	} else if val != 123 {
-		t.Fatal("failed getting int value", val, ok)
-	}
+	assert.Equal(t, true, ok)
+	assert.Equal(t, 123, val)
 
 	val = params.GetInt("test")
-	if val != 123 {
-		t.Fatal("failed getting int value", val, ok)
-	}
+	assert.Equal(t, 123, val)
 }
 
 // TestParams_GetInt8Ok
 func TestParams_GetInt8Ok(t *testing.T) {
 	body := ""
 	r, err := http.NewRequestWithContext(context.Background(), "GET", "/test?test=123", strings.NewReader(body))
-	if err != nil {
-		t.Fatal("Could not build request", err)
-	}
+	assert.NoError(t, err)
 
 	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
 
 	params := GetParams(r)
 
 	val, ok := params.GetInt8Ok("test")
-	if !ok {
-		t.Fatal("failed getting int parameter", val, ok)
-	} else if val != 123 {
-		t.Fatal("failed getting int value", val, ok)
-	}
+	assert.Equal(t, true, ok)
+	assert.Equal(t, int8(123), val)
 }
 
 // TestParams_GetInt8TooSmall
 func TestParams_GetInt8TooSmall(t *testing.T) {
 	body := ""
 	r, err := http.NewRequestWithContext(context.Background(), "GET", "/test?test=-300", strings.NewReader(body))
-	if err != nil {
-		t.Fatal("Could not build request", err)
-	}
+	assert.NoError(t, err)
 
 	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
 
 	params := GetParams(r)
 
 	val := params.GetInt8("test")
-	if val != 0 {
-		t.Fatal("expected to get 0", val)
-	}
+	assert.Equal(t, int8(0), val)
 }
 
 // TestParams_GetInt8TooBig
 func TestParams_GetInt8TooBig(t *testing.T) {
 	body := ""
 	r, err := http.NewRequestWithContext(context.Background(), "GET", "/test?test=300", strings.NewReader(body))
-	if err != nil {
-		t.Fatal("Could not build request", err)
-	}
+	assert.NoError(t, err)
 
 	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
 
 	params := GetParams(r)
 
 	val := params.GetInt8("test")
-	if val != 0 {
-		t.Fatal("expected to get 0", val)
-	}
+	assert.Equal(t, int8(0), val)
 }
 
 // TestParams_GetInt16Ok
 func TestParams_GetInt16Ok(t *testing.T) {
 	body := ""
 	r, err := http.NewRequestWithContext(context.Background(), "GET", "/test?test=123", strings.NewReader(body))
-	if err != nil {
-		t.Fatal("Could not build request", err)
-	}
+	assert.NoError(t, err)
 
 	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
 
 	params := GetParams(r)
 
 	val, ok := params.GetInt16Ok("test")
-	if !ok {
-		t.Fatal("failed getting int parameter", val, ok)
-	} else if val != 123 {
-		t.Fatal("failed getting int value", val, ok)
-	}
+	assert.Equal(t, true, ok)
+	assert.Equal(t, int16(123), val)
 
 	val = params.GetInt16("test")
-	if val != 123 {
-		t.Fatal("failed getting int value", val, ok)
-	}
+	assert.Equal(t, int16(123), val)
 }
 
 // TestParams_GetInt16TooSmall
 func TestParams_GetInt16TooSmall(t *testing.T) {
 	body := ""
 	r, err := http.NewRequestWithContext(context.Background(), "GET", "/test?test=-32769", strings.NewReader(body))
-	if err != nil {
-		t.Fatal("Could not build request", err)
-	}
+	assert.NoError(t, err)
 
 	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
 
 	params := GetParams(r)
 
 	val := params.GetInt16("test")
-	if val != 0 {
-		t.Fatal("expected to get 0", val)
-	}
+	assert.Equal(t, int16(0), val)
 }
 
 // TestParams_GetInt16TooBig
 func TestParams_GetInt16TooBig(t *testing.T) {
 	body := ""
 	r, err := http.NewRequestWithContext(context.Background(), "GET", "/test?test=32769", strings.NewReader(body))
-	if err != nil {
-		t.Fatal("Could not build request", err)
-	}
+	assert.NoError(t, err)
 
 	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
 
 	params := GetParams(r)
 
 	val := params.GetInt16("test")
-	if val != 0 {
-		t.Fatal("expected to get 0", val)
-	}
+	assert.Equal(t, int16(0), val)
 }
 
 // TestParams_GetInt32Ok
 func TestParams_GetInt32Ok(t *testing.T) {
 	body := ""
 	r, err := http.NewRequestWithContext(context.Background(), "GET", "/test?test=123", strings.NewReader(body))
-	if err != nil {
-		t.Fatal("Could not build request", err)
-	}
+	assert.NoError(t, err)
 
 	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
 
 	params := GetParams(r)
 
 	val, ok := params.GetInt32Ok("test")
-	if !ok {
-		t.Fatal("failed getting int parameter", val, ok)
-	} else if val != 123 {
-		t.Fatal("failed getting int value", val, ok)
-	}
+	assert.Equal(t, true, ok)
+	assert.Equal(t, int32(123), val)
 
 	val = params.GetInt32("test")
-	if val != 123 {
-		t.Fatal("failed getting int value", val, ok)
-	}
+	assert.Equal(t, int32(123), val)
 }
 
 // TestParams_GetInt32TooSmall
 func TestParams_GetInt32TooSmall(t *testing.T) {
 	body := ""
 	r, err := http.NewRequestWithContext(context.Background(), "GET", fmt.Sprintf("/test?test=%d", math.MinInt32-1), strings.NewReader(body))
-	if err != nil {
-		t.Fatal("Could not build request", err)
-	}
+	assert.NoError(t, err)
 
 	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
 
 	params := GetParams(r)
 
 	val := params.GetInt32("test")
-	if val != 0 {
-		t.Fatal("expected to get 0", val)
-	}
+	assert.Equal(t, int32(0), val)
 }
 
 // TestParams_GetInt32TooBig
 func TestParams_GetInt32TooBig(t *testing.T) {
 	body := ""
 	r, err := http.NewRequestWithContext(context.Background(), "GET", fmt.Sprintf("/test?test=%d", math.MaxInt32+1), strings.NewReader(body))
-	if err != nil {
-		t.Fatal("Could not build request", err)
-	}
+	assert.NoError(t, err)
 
 	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
 
 	params := GetParams(r)
 
 	val := params.GetInt32("test")
-	if val != 0 {
-		t.Fatal("expected to get 0", val)
-	}
+	assert.Equal(t, int32(0), val)
 }
 
 // TestParams_GetInt64Ok
 func TestParams_GetInt64Ok(t *testing.T) {
 	body := ""
 	r, err := http.NewRequestWithContext(context.Background(), "GET", "/test?test=123", strings.NewReader(body))
-	if err != nil {
-		t.Fatal("Could not build request", err)
-	}
+	assert.NoError(t, err)
 
 	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
 
 	params := GetParams(r)
 
 	val, ok := params.GetInt64Ok("test")
-	if !ok {
-		t.Fatal("failed getting int parameter", val, ok)
-	} else if val != 123 {
-		t.Fatal("failed getting int value", val, ok)
-	}
+	assert.Equal(t, true, ok)
+	assert.Equal(t, int64(123), val)
 
 	val = params.GetInt64("test")
-	if val != 123 {
-		t.Fatal("failed getting int value", val, ok)
-	}
+	assert.Equal(t, int64(123), val)
 }
 
 // TestParams_GetInt64TooSmall
 func TestParams_GetInt64TooSmall(t *testing.T) {
 	body := ""
 	r, err := http.NewRequestWithContext(context.Background(), "GET", fmt.Sprintf("/test?test=%d", 0), strings.NewReader(body))
-	if err != nil {
-		t.Fatal("Could not build request", err)
-	}
+	assert.NoError(t, err)
 
 	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
 
 	params := GetParams(r)
 
 	val := params.GetInt64("test")
-	if val != 0 {
-		t.Fatal("expected to get 0", val)
-	}
+	assert.Equal(t, int64(0), val)
 }
 
 // TestParams_GetUint64Ok
 func TestParams_GetUint64Ok(t *testing.T) {
 	body := ""
 	r, err := http.NewRequestWithContext(context.Background(), "GET", "/test?test=123", strings.NewReader(body))
-	if err != nil {
-		t.Fatal("Could not build request", err)
-	}
+	assert.NoError(t, err)
 
 	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
 
 	params := GetParams(r)
 
 	val, ok := params.GetUint64Ok("test")
-	if !ok {
-		t.Fatal("failed getting uint parameter", val, ok)
-	} else if val != 123 {
-		t.Fatal("failed getting uint value", val, ok)
-	}
+	assert.Equal(t, true, ok)
+	assert.Equal(t, uint64(123), val)
 }
 
 // TestGetParams_Post
 func TestGetParams_Post(t *testing.T) {
 	body := "test=true"
 	r, err := http.NewRequestWithContext(context.Background(), "POST", "test", strings.NewReader(body))
-	if err != nil {
-		t.Fatal("Could not build request", err)
-	}
+	assert.NoError(t, err)
 	r.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
 	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
@@ -557,21 +420,30 @@ func TestGetParams_Post(t *testing.T) {
 	params := GetParams(r)
 
 	val, present := params.Get("test")
-	if !present {
-		t.Fatal("Key: 'test' not found")
-	}
-	if val != true {
-		t.Fatal("Value of 'test' should be 'true', got: ", val)
-	}
+	assert.Equal(t, true, present)
+	assert.Equal(t, true, val)
+}
+
+// TestParams_GetTimeOk
+func TestParams_GetTimeOk(t *testing.T) {
+	body := ""
+	r, err := http.NewRequestWithContext(context.Background(), "GET", "/test?test=2020-12-31", strings.NewReader(body))
+	assert.NoError(t, err)
+
+	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
+
+	params := GetParams(r)
+
+	val, ok := params.GetTimeOk("test")
+	assert.Equal(t, true, ok)
+	assert.Equal(t, "2020-12-31 00:00:00 +0000 UTC", val.String())
 }
 
 // TestGetParams_Put
 func TestGetParams_Put(t *testing.T) {
 	body := "test=true"
 	r, err := http.NewRequestWithContext(context.Background(), "PUT", "test", strings.NewReader(body))
-	if err != nil {
-		t.Fatal("Could not build request", err)
-	}
+	assert.NoError(t, err)
 	r.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
 	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
@@ -579,21 +451,15 @@ func TestGetParams_Put(t *testing.T) {
 	params := GetParams(r)
 
 	val, present := params.Get("test")
-	if !present {
-		t.Fatal("Key: 'test' not found")
-	}
-	if val != true {
-		t.Fatal("Value of 'test' should be 'true', got: ", val)
-	}
+	assert.Equal(t, true, present)
+	assert.Equal(t, true, val)
 }
 
 // TestGetParams_ParsePostUrlJSON
 func TestGetParams_ParsePostUrlJSON(t *testing.T) {
 
 	r, err := http.NewRequestWithContext(context.Background(), "PUT", "test?test=false&id=1", strings.NewReader(testJSONParam))
-	if err != nil {
-		t.Fatal("Could not build request", err)
-	}
+	assert.NoError(t, err)
 	r.Header.Set("Content-Type", "application/json")
 
 	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
@@ -601,29 +467,19 @@ func TestGetParams_ParsePostUrlJSON(t *testing.T) {
 	params := GetParams(r)
 
 	val, present := params.Get("test")
-	if !present {
-		t.Fatal("Key: 'test' not found")
-	}
-	if val != true {
-		t.Fatal("Value of 'test' should be 'true', got: ", val)
-	}
+	assert.Equal(t, true, present)
+	assert.Equal(t, true, val)
 
 	val, present = params.GetFloatOk("id")
-	if !present {
-		t.Fatal("Key: 'id' not found")
-	}
-	if val != 1.0 {
-		t.Fatal("Value of 'id' should be 1, got: ", val)
-	}
+	assert.Equal(t, true, present)
+	assert.Equal(t, 1.0, val)
 }
 
 // TestGetParams_ParseJSONBodyMux
 func TestGetParams_ParseJSONBodyMux(t *testing.T) {
 
 	r, err := http.NewRequestWithContext(context.Background(), "POST", "/test/42", strings.NewReader(testJSONParam))
-	if err != nil {
-		t.Fatal("Could not build request", err)
-	}
+	assert.NoError(t, err)
 	r.Header.Set("Content-Type", "application/json")
 	m := mux.NewRouter()
 	// m.KeepContext = true
@@ -633,26 +489,16 @@ func TestGetParams_ParseJSONBodyMux(t *testing.T) {
 		params := GetParams(r)
 
 		val, present := params.Get("test")
-		if !present {
-			t.Fatal("Key: 'test' not found")
-		}
-		if val != true {
-			t.Fatal("Value of 'test' should be 'true', got: ", val)
-		}
+		assert.Equal(t, true, present)
+		assert.Equal(t, true, val)
 
 		val, present = params.Get("id")
-		if !present {
-			t.Fatal("Key: 'id' not found")
-		}
-		if val != uint64(42) {
-			t.Fatal("Value of 'id' should be 42, got: ", val)
-		}
+		assert.Equal(t, true, present)
+		assert.Equal(t, uint64(42), val)
 	})
 
 	var match mux.RouteMatch
-	if !m.Match(r, &match) {
-		t.Error("Mux did not match")
-	}
+	assert.Equal(t, true, m.Match(r, &match))
 	m.ServeHTTP(nil, r)
 }
 
@@ -660,9 +506,7 @@ func TestGetParams_ParseJSONBodyMux(t *testing.T) {
 func TestImbue(t *testing.T) {
 	body := "test=true&keys=this,that,something&values=1,2,3"
 	r, err := http.NewRequestWithContext(context.Background(), "PUT", "test", strings.NewReader(body))
-	if err != nil {
-		t.Fatal("Could not build request", err)
-	}
+	assert.NoError(t, err)
 	r.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
 	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
@@ -678,20 +522,13 @@ func TestImbue(t *testing.T) {
 	var obj testType
 	params.Imbue(&obj)
 
-	if obj.Test != true {
-		t.Fatal("Value of 'test' should be 'true', got: ", obj.Test)
-	}
-	if len(obj.Keys) != 3 {
-		t.Fatal("Length of 'keys' should be '3', got: ", len(obj.Keys))
-	}
-	if len(obj.Values) != 3 {
-		t.Fatal("Length of 'values' should be '3', got: ", len(obj.Values))
-	}
+	assert.Equal(t, true, obj.Test)
+	assert.Equal(t, 3, len(obj.Keys))
+	assert.Equal(t, 3, len(obj.Values))
+
 	values := []int{1, 2, 3}
 	for i, k := range obj.Values {
-		if values[i] != k {
-			t.Fatal("Expected ", values[i], ", got:", k)
-		}
+		assert.Equal(t, k, values[i])
 	}
 }
 
@@ -699,9 +536,7 @@ func TestImbue(t *testing.T) {
 func TestImbue_Time(t *testing.T) {
 	body := "test=true&created_at=2016-06-07T00:30Z&remind_on=2016-07-17"
 	r, err := http.NewRequestWithContext(context.Background(), "PUT", "test", strings.NewReader(body))
-	if err != nil {
-		t.Fatal("Could not build request", err)
-	}
+	assert.NoError(t, err)
 	r.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
 	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
@@ -717,61 +552,57 @@ func TestImbue_Time(t *testing.T) {
 	var obj testType
 	params.Imbue(&obj)
 
-	if obj.Test != true {
-		t.Fatal("Value of 'test' should be 'true', got: ", obj.Test)
-	}
+	assert.Equal(t, true, obj.Test)
+
 	createdAt, _ := time.Parse(time.RFC3339, "2016-06-07T00:30Z00:00")
-	if !obj.CreatedAt.Equal(createdAt) {
-		t.Fatal("CreatedAt should be '2016-06-07T00:30Z', got:", obj.CreatedAt)
-	}
+	assert.Equal(t, true, obj.CreatedAt.Equal(createdAt))
+
 	remindOn, _ := time.Parse(DateOnly, "2016-07-17")
-	if obj.RemindOn == nil || !obj.RemindOn.Equal(remindOn) {
-		t.Fatal("RemindOn should be '2016-07-17', got:", obj.RemindOn)
-	}
+	assert.NotNil(t, remindOn)
+	assert.Equal(t, true, obj.RemindOn.Equal(remindOn))
 }
 
 // TestHasAll
 func TestHasAll(t *testing.T) {
 	body := "test=true&keys=this,that,something&values=1,2,3"
 	r, err := http.NewRequestWithContext(context.Background(), "PUT", "test", strings.NewReader(body))
-	if err != nil {
-		t.Fatal("Could not build request", err)
-	}
+	assert.NoError(t, err)
 	r.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
 	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
 
 	params := GetParams(r)
-	// Test All
-	if ok, missing := params.HasAll("test", "keys", "values"); !ok || len(missing) > 0 {
-		t.Fatal("Params should have all keys, could not find", missing)
-	}
 
-	// Test Partial Contains
-	if ok, missing := params.HasAll("test"); !ok || len(missing) > 0 {
-		t.Fatal("Params should have key 'test', could not find", missing)
-	}
+	t.Run("test all", func(t *testing.T) {
+		ok, missing := params.HasAll("test", "keys", "values")
+		assert.Equal(t, true, ok)
+		assert.Equal(t, 0, len(missing))
+	})
 
-	// Test Partial Missing
-	if ok, missing := params.HasAll("test", "nope"); ok || len(missing) == 0 {
-		t.Fatal("Params should not have key 'nope'", missing)
-	} else if contains(missing, "test") {
-		t.Fatal("Missing should not contain 'test'")
-	}
+	t.Run("test partial", func(t *testing.T) {
+		ok, missing := params.HasAll("test")
+		assert.Equal(t, true, ok)
+		assert.Equal(t, 0, len(missing))
+	})
 
-	// Test All missing
-	if ok, missing := params.HasAll("negative", "nope"); ok || len(missing) == 0 {
-		t.Fatal("Params should not have key 'nope' nor 'negative'", missing)
-	}
+	t.Run("test partial missing", func(t *testing.T) {
+		ok, missing := params.HasAll("test", "nope")
+		assert.Equal(t, false, ok)
+		assert.NotEqual(t, 0, len(missing))
+	})
+
+	t.Run("test all missing", func(t *testing.T) {
+		ok, missing := params.HasAll("negative", "nope")
+		assert.Equal(t, false, ok)
+		assert.NotEqual(t, 0, len(missing))
+	})
 }
 
 // TestGetParams_ParseEmpty test some garbage input, ids= "" (empty string) Should either be not ok, or empty slice
 func TestGetParams_ParseEmpty(t *testing.T) {
 
 	r, err := http.NewRequestWithContext(context.Background(), "PUT", "test?ids=", strings.NewReader(testJSONParam))
-	if err != nil {
-		t.Fatal("Could not build request", err)
-	}
+	assert.NoError(t, err)
 	r.Header.Set("Content-Type", "application/json")
 
 	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
@@ -779,20 +610,15 @@ func TestGetParams_ParseEmpty(t *testing.T) {
 	params := GetParams(r)
 
 	ids, ok := params.GetUint64SliceOk("ids")
-	if ok {
-		if len(ids) > 0 {
-			t.Fatal("ids should be !ok or an empty array. Length:", len(ids))
-		}
-	}
+	assert.Equal(t, true, ok)
+	assert.Equal(t, 0, len(ids))
 }
 
 // TestGetParams_NegativeUint test Uint64 returns not ok for negative values
 func TestGetParams_NegativeUint(t *testing.T) {
 	body := "{\"id\":-1}"
 	r, err := http.NewRequestWithContext(context.Background(), "PUT", "test", strings.NewReader(body))
-	if err != nil {
-		t.Fatal("Could not build request", err)
-	}
+	assert.NoError(t, err)
 	r.Header.Set("Content-Type", "application/json")
 
 	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
@@ -800,15 +626,12 @@ func TestGetParams_NegativeUint(t *testing.T) {
 	params := GetParams(r)
 
 	id, ok := params.GetUint64Ok("id")
-	if ok {
-		t.Fatal("Negative uint64 should be !ok not", id)
-	}
+	assert.Equal(t, false, ok)
+	assert.Equal(t, uint64(0), id)
 
 	body = "{\"id\":1}"
 	r, err = http.NewRequestWithContext(context.Background(), "PUT", "test", strings.NewReader(body))
-	if err != nil {
-		t.Fatal("Could not build request", err)
-	}
+	assert.NoError(t, err)
 	r.Header.Set("Content-Type", "application/json")
 
 	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
@@ -816,7 +639,6 @@ func TestGetParams_NegativeUint(t *testing.T) {
 	params = GetParams(r)
 
 	id, ok = params.GetUint64Ok("id")
-	if !ok || id != 1 {
-		t.Fatal("Id should be 1 not", id)
-	}
+	assert.Equal(t, true, ok)
+	assert.Equal(t, uint64(1), id)
 }

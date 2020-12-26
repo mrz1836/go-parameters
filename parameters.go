@@ -86,7 +86,7 @@ func (p *Params) GetFloatOk(key string) (float64, bool) {
 	if ok && val != nil {
 		return val.(float64), true
 	}
-	return 0, false
+	return 0, true
 }
 
 // GetFloat get param by key, return float
@@ -264,10 +264,12 @@ func (p *Params) GetIntSliceOk(key string) ([]int, bool) {
 			raw := strings.Split(val.(string), ",")
 			slice := make([]int, len(raw))
 			for i, k := range raw {
-				if num, err := strconv.ParseInt(k, 10, 64); err == nil {
+				if num, err := strconv.ParseInt(
+					k, 10, 64,
+				); err == nil {
 					slice[i] = int(num)
 				} else {
-					return slice, false
+					return slice, true
 				}
 			}
 			return slice, true
@@ -276,14 +278,17 @@ func (p *Params) GetIntSliceOk(key string) ([]int, bool) {
 				raw := strings.Split(val.(string), ",")
 				slice := make([]int, len(raw))
 				for i, k := range raw {
-					if num, err := strconv.ParseInt(k, 10, 64); err == nil {
+					if num, err := strconv.ParseInt(
+						k, 10, 64,
+					); err == nil {
 						slice[i] = int(num)
 					} else {
-						return slice, false
+						return slice, true
 					}
 				}
 				return slice, true
 			}
+			return nil, true
 		case []interface{}:
 			raw := val.([]interface{})
 			slice := make([]int, len(raw))
@@ -293,14 +298,18 @@ func (p *Params) GetIntSliceOk(key string) ([]int, bool) {
 				} else if num, found := k.(float64); found {
 					slice[i] = int(num)
 				} else if num, found := k.(string); found {
-					if parsed, err := strconv.ParseInt(num, 10, 64); err == nil {
+					if parsed, err := strconv.ParseInt(
+						num, 10, 64,
+					); err == nil {
 						slice[i] = int(parsed)
 					} else {
-						return slice, false
+						return slice, true
 					}
 				}
 			}
 			return slice, true
+		default:
+			return nil, true
 		}
 	}
 	return []int{}, false
@@ -427,7 +436,7 @@ func (p *Params) GetBytesOk(key string) ([]byte, bool) {
 			dataByte, err = base64.StdEncoding.DecodeString(dataStr.(string))
 			if err != nil {
 				log.Println("error decoding data:", key, err)
-				return nil, false
+				return nil, true
 			}
 			p.Values[key] = dataByte
 		}
@@ -477,7 +486,7 @@ func (p *Params) GetTimeInLocationOk(key string, loc *time.Location) (time.Time,
 		}
 	}
 
-	return time.Time{}, false
+	return time.Time{}, true
 }
 
 // GetTimeInLocation get param by key, return time
@@ -495,7 +504,7 @@ func (p *Params) GetFileOk(key string) (*multipart.FileHeader, bool) {
 	if fh, good := val.(*multipart.FileHeader); good {
 		return fh, true
 	}
-	return nil, false
+	return nil, true
 }
 
 // GetJSONOk get param by key, return map of string interface

@@ -1,6 +1,10 @@
 package parameters
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+)
 
 // TestCamelCaseToSnakeCase
 func TestCamelCaseToSnakeCase(t *testing.T) {
@@ -15,11 +19,10 @@ func TestCamelCaseToSnakeCase(t *testing.T) {
 	}
 
 	for k, v := range entries {
-		transformed := CamelToSnakeCase(k)
-		if transformed != v {
-			t.Logf(`Expected "%s" to become "%s", not "%s"`, k, v, transformed)
-			t.Fail()
-		}
+		t.Run("testing: "+k, func(t *testing.T) {
+			transformed := CamelToSnakeCase(k)
+			assert.Equal(t, v, transformed)
+		})
 	}
 }
 
@@ -36,10 +39,9 @@ func TestSnakeCaseToCamelCase(t *testing.T) {
 	}
 
 	for k, v := range entries {
-		transformed := SnakeToCamelCase(k, true)
-		if transformed != v {
-			t.Logf(`Expected "%s" to become "%s", not "%s"`, k, v, transformed)
-			t.Fail()
-		}
+		t.Run("testing: "+k, func(t *testing.T) {
+			transformed := SnakeToCamelCase(k, true)
+			assert.Equal(t, v, transformed)
+		})
 	}
 }

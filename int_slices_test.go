@@ -4,20 +4,18 @@ import (
 	"fmt"
 	"reflect"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 // TestUniqueUint64 test unique uint64
 func TestUniqueUint64(t *testing.T) {
 	one := []uint64{3, 2, 1}
-	if !reflect.DeepEqual(UniqueUint64(one), one) {
-		t.Errorf("slice with no dupes is different")
-	}
+	assert.Equal(t, true, reflect.DeepEqual(UniqueUint64(one), one))
 
 	two := []uint64{3, 2, 1, 3, 3, 3, 3}
 
-	if !reflect.DeepEqual(UniqueUint64(two), one) {
-		t.Errorf("slice with dupes is not what we expected")
-	}
+	assert.Equal(t, true, reflect.DeepEqual(UniqueUint64(two), one))
 }
 
 // ExampleUniqueUint64 shows an example using the method
