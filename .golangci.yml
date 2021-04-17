@@ -378,7 +378,7 @@ issues:
   exclude-rules:
     - linters:
         - gosimple
-      text: "S1034:"
+      text: "S1034"
     # Exclude some linters from running on tests files.
     - path: _test\.go
       linters:
