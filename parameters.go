@@ -724,8 +724,18 @@ func ParseParams(req *http.Request) *Params {
 		}
 	}
 
+	// read the whole body into bytes
+	body, err := ioutil.ReadAll(req.Body)
+	if err == nil {
+		// must close
+		if err = req.Body.Close(); err == nil {
+			// no errors, restore the body on the request for other readers
+			req.Body = io.NopCloser(bytes.NewReader(body))
+		}
+	}
+
 	if ct == "application/json" && req.ContentLength > 0 {
-		err := json.NewDecoder(req.Body).Decode(&p.Values)
+		err = json.Unmarshal(body, &p.Values)
 		if err != nil {
 			log.Println("content-type is \"application/json\" but no valid json data received:", err)
 			p.Values = tempMap
@@ -739,7 +749,6 @@ func ParseParams(req *http.Request) *Params {
 		var mh codec.MsgpackHandle
 		p.isBinary = true
 		mh.MapType = reflect.TypeOf(p.Values)
-		body, _ := ioutil.ReadAll(req.Body)
 		if len(body) > 0 {
 			buff := bytes.NewBuffer(body)
 			first := body[0]
