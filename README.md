@@ -1,5 +1,5 @@
 # go-parameters
-> Parameter multi-tool that parses json, msg pack, or multi-part form data into a parameter object.
+> Parameter multi-tool that parses json, msg pack, or multipart form data into a parameter object.
 
 [![Release](https://img.shields.io/github/release-pre/mrz1836/go-parameters.svg?logo=github&style=flat)](https://github.com/mrz1836/go-parameters/releases)
 [![Build Status](https://img.shields.io/github/workflow/status/mrz1836/go-parameters/run-go-tests?logo=github&v=3)](https://github.com/mrz1836/go-parameters/actions)
@@ -110,7 +110,7 @@ vet                  Run the Go vet application
 
 ## Examples & Tests
 All unit tests and [examples](examples) run via [Github Actions](https://github.com/mrz1836/go-parameters/actions) and
-uses [Go version 1.15.x](https://golang.org/doc/go1.15). View the [configuration file](.github/workflows/run-tests.yml).
+uses [Go version 1.16.x](https://golang.org/doc/go1.16). View the [configuration file](.github/workflows/run-tests.yml).
 
 Run all tests (including integration tests)
 ```shell script
@@ -173,8 +173,8 @@ func main() {
 
 ## Maintainers
 | [<img src="https://github.com/mrz1836.png" height="50" alt="MrZ" />](https://github.com/mrz1836) | [<img src="https://github.com/kayleg.png" height="50" alt="kayleg" />](https://github.com/kayleg) |
-|:---:|:---:|
-| [MrZ](https://github.com/mrz1836) | [kayleg](https://github.com/kayleg) |
+|:------------------------------------------------------------------------------------------------:|:-------------------------------------------------------------------------------------------------:|
+|                                [MrZ](https://github.com/mrz1836)                                 |                                [kayleg](https://github.com/kayleg)                                |
 
 <br/>
 
@@ -191,4 +191,4 @@ or by making a [**bitcoin donation**](https://mrz1818.com/?tab=tips&utm_source=g
 
 ## License
 
-![License](https://img.shields.io/github/license/mrz1836/go-parameters.svg?style=flat&p=1)
+[![License](https://img.shields.io/github/license/mrz1836/go-parameters.svg?style=flat&p=1)](LICENSE)
