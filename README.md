@@ -2,7 +2,7 @@
 > Parameter multi-tool that parses json, msg pack, or multipart form data into a parameter object.
 
 [![Release](https://img.shields.io/github/release-pre/mrz1836/go-parameters.svg?logo=github&style=flat)](https://github.com/mrz1836/go-parameters/releases)
-[![Build Status](https://img.shields.io/github/workflow/status/mrz1836/go-parameters/run-go-tests?logo=github&v=3)](https://github.com/mrz1836/go-parameters/actions)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/mrz1836/go-parameters/run-tests.yml?branch=master&logo=github&v=2)](https://github.com/mrz1836/go-parameters/actions)
 [![Report](https://goreportcard.com/badge/github.com/mrz1836/go-parameters?style=flat&p=1)](https://goreportcard.com/report/github.com/mrz1836/go-parameters)
 [![codecov](https://codecov.io/gh/mrz1836/go-parameters/branch/master/graph/badge.svg)](https://codecov.io/gh/mrz1836/go-parameters)
 [![Go](https://img.shields.io/github/go-mod/go-version/mrz1836/go-parameters)](https://golang.org/)
