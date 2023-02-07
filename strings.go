@@ -10,14 +10,15 @@ import (
 // Any entry in this list will become full upper case when converting from
 // snake_case to camelCase
 //
-// 		user_id -> UserID
+//	user_id -> UserID
 var KnownAbbreviations = []string{"id", "json", "html", "xml"}
 
 var camelCaseRe = regexp.MustCompile(`(?:^[\p{Ll}]|\d+|[\p{Lu}]+)[\p{Ll}]*`)
 
 // CamelToSnakeCase converts CamelCase to snake_case
 // Consecutive capital letters will be treated as one word:
-//  HTML -> html
+//
+//	HTML -> html
 func CamelToSnakeCase(str string) string {
 	words := camelCaseRe.FindAllString(str, -1)
 
@@ -30,8 +31,9 @@ func CamelToSnakeCase(str string) string {
 
 // SnakeToCamelCase converts snake_case to CamelCase.
 // When:
-//  ucFirst = false - snake_case -> snakeCase
-//  ucFirst = true  - snake_case -> SnakeCase
+//
+//	ucFirst = false - snake_case -> snakeCase
+//	ucFirst = true  - snake_case -> SnakeCase
 func SnakeToCamelCase(str string, ucFirst bool) string {
 	words := strings.Split(str, "_")
 	var i int
