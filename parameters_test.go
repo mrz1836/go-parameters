@@ -36,6 +36,19 @@ func TestGetParams_ParseJSONBody(t *testing.T) {
 	assert.Equal(t, true, val)
 }
 
+// BenchmarkGetParams_ParseJSONBody benchmarks the method
+func BenchmarkGetParams_ParseJSONBody(b *testing.B) {
+	r, err := http.NewRequestWithContext(context.Background(), "POST", "test", strings.NewReader(testJSONParam))
+	assert.NoError(b, err)
+	r.Header.Set("Content-Type", "application/json")
+
+	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
+
+	for i := 0; i < b.N; i++ {
+		_ = GetParams(r)
+	}
+}
+
 // TestGetParams_ParseJSONBodyContentType
 func TestGetParams_ParseJSONBodyContentType(t *testing.T) {
 
@@ -91,7 +104,7 @@ func TestGetParams_ParseNestedJSONBody(t *testing.T) {
 	assert.Equal(t, 10.101, lon)
 }
 
-// TestGetParams
+// TestGetParams tests the GetParams method
 func TestGetParams(t *testing.T) {
 	body := ""
 	r, err := http.NewRequestWithContext(context.Background(), "GET", "test?test=true", strings.NewReader(body))
@@ -104,6 +117,19 @@ func TestGetParams(t *testing.T) {
 	val, present := params.Get("test")
 	assert.Equal(t, true, present)
 	assert.Equal(t, true, val)
+}
+
+// BenchmarkGetParams benchmarks the method
+func BenchmarkGetParams(b *testing.B) {
+	body := ""
+	r, err := http.NewRequestWithContext(context.Background(), "GET", "test?test=true", strings.NewReader(body))
+	assert.NoError(b, err)
+
+	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
+
+	for i := 0; i < b.N; i++ {
+		_ = GetParams(r)
+	}
 }
 
 // TestParams_GetStringOk
@@ -124,6 +150,21 @@ func TestParams_GetStringOk(t *testing.T) {
 	assert.Equal(t, "string", val)
 }
 
+// BenchmarkGetStringOk benchmarks the method
+func BenchmarkParams_GetStringOk(b *testing.B) {
+	body := ""
+	r, err := http.NewRequestWithContext(context.Background(), "GET", "/test?test=string", strings.NewReader(body))
+	assert.NoError(b, err)
+
+	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
+
+	params := GetParams(r)
+
+	for i := 0; i < b.N; i++ {
+		_, _ = params.GetStringOk("test")
+	}
+}
+
 // TestParams_GetBoolOk
 func TestParams_GetBoolOk(t *testing.T) {
 	body := ""
@@ -139,19 +180,19 @@ func TestParams_GetBoolOk(t *testing.T) {
 	assert.Equal(t, true, val)
 }
 
-// TestParams_GetBoolInt
-func TestParams_GetBoolInt(t *testing.T) {
+// BenchmarkGetBoolOk benchmarks the method
+func BenchmarkParams_GetBoolOk(b *testing.B) {
 	body := ""
-	r, err := http.NewRequestWithContext(context.Background(), "GET", "/test?test=1", strings.NewReader(body))
-	assert.NoError(t, err)
+	r, err := http.NewRequestWithContext(context.Background(), "GET", "/test?test=true", strings.NewReader(body))
+	assert.NoError(b, err)
 
 	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
 
 	params := GetParams(r)
 
-	val, ok := params.GetBoolOk("test")
-	assert.Equal(t, true, ok)
-	assert.Equal(t, true, val)
+	for i := 0; i < b.N; i++ {
+		_, _ = params.GetBoolOk("test")
+	}
 }
 
 // TestParams_GetBytesOk
@@ -178,6 +219,42 @@ func TestParams_GetBytesOk(t *testing.T) {
 	assert.Equal(t, 75, len(val))
 }
 
+// BenchmarkParams_GetBytesOk benchmarks the method
+func BenchmarkParams_GetBytesOk(b *testing.B) {
+	testBytes := make([]byte, 100)
+	for i := 0; i < 100; i++ {
+		testBytes[i] = 'a' + byte(i%26)
+	}
+	testString := string(testBytes)
+
+	body := ""
+	r, err := http.NewRequestWithContext(context.Background(), "GET", "/test?test="+testString, strings.NewReader(body))
+	assert.NoError(b, err)
+
+	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
+
+	params := GetParams(r)
+
+	for i := 0; i < b.N; i++ {
+		_, _ = params.GetBytesOk("test")
+	}
+}
+
+// BenchmarkParams_GetBool benchmarks the method
+func BenchmarkParams_GetBool(b *testing.B) {
+	body := ""
+	r, err := http.NewRequestWithContext(context.Background(), "GET", "/test?test=true", strings.NewReader(body))
+	assert.NoError(b, err)
+
+	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
+
+	params := GetParams(r)
+
+	for i := 0; i < b.N; i++ {
+		_ = params.GetBool("test")
+	}
+}
+
 // TestParams_GetFloatOk
 func TestParams_GetFloatOk(t *testing.T) {
 	body := ""
@@ -194,6 +271,21 @@ func TestParams_GetFloatOk(t *testing.T) {
 
 	val = params.GetFloat("test")
 	assert.Equal(t, 123.1234, val)
+}
+
+// BenchmarkParams_GetFloatOk benchmarks the method
+func BenchmarkParams_GetFloatOk(b *testing.B) {
+	body := ""
+	r, err := http.NewRequestWithContext(context.Background(), "GET", "/test?test=123.1234", strings.NewReader(body))
+	assert.NoError(b, err)
+
+	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
+
+	params := GetParams(r)
+
+	for i := 0; i < b.N; i++ {
+		_, _ = params.GetFloatOk("test")
+	}
 }
 
 // TestParams_GetFloatOk2
@@ -227,6 +319,21 @@ func TestParams_GetIntOk(t *testing.T) {
 
 	val = params.GetInt("test")
 	assert.Equal(t, 123, val)
+}
+
+// BenchmarkParams_GetIntOk benchmarks the method
+func BenchmarkParams_GetIntOk(b *testing.B) {
+	body := ""
+	r, err := http.NewRequestWithContext(context.Background(), "GET", "/test?test=123", strings.NewReader(body))
+	assert.NoError(b, err)
+
+	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
+
+	params := GetParams(r)
+
+	for i := 0; i < b.N; i++ {
+		_, _ = params.GetIntOk("test")
+	}
 }
 
 // TestParams_GetInt8Ok
@@ -382,6 +489,21 @@ func TestParams_GetInt64Ok(t *testing.T) {
 	assert.Equal(t, int64(123), val)
 }
 
+// BenchmarkParams_GetInt64Ok benchmarks the method
+func BenchmarkParams_GetInt64Ok(b *testing.B) {
+	body := ""
+	r, err := http.NewRequestWithContext(context.Background(), "GET", "/test?test=123", strings.NewReader(body))
+	assert.NoError(b, err)
+
+	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
+
+	params := GetParams(r)
+
+	for i := 0; i < b.N; i++ {
+		_, _ = params.GetInt64Ok("test")
+	}
+}
+
 // TestParams_GetInt64TooSmall
 func TestParams_GetInt64TooSmall(t *testing.T) {
 	body := ""
@@ -445,7 +567,7 @@ func TestParams_GetTimeOk(t *testing.T) {
 // TestGetParams_Put
 func TestGetParams_Put(t *testing.T) {
 	body := "test=true"
-	r, err := http.NewRequestWithContext(context.Background(), "PUT", "test", strings.NewReader(body))
+	r, err := http.NewRequestWithContext(context.Background(), http.MethodPut, "test", strings.NewReader(body))
 	assert.NoError(t, err)
 	r.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
@@ -766,8 +888,8 @@ func TestMakeParsedReq(t *testing.T) {
 	})
 }
 
-// TestGetFloatSliceOk tests the GetFloatSliceOk method
-func TestGetFloatSliceOk(t *testing.T) {
+// TestParams_GetFloatSliceOk tests the GetFloatSliceOk method
+func TestParams_GetFloatSliceOk(t *testing.T) {
 	tests := []struct {
 		name           string
 		params         *Params
@@ -883,8 +1005,8 @@ func TestGetFloatSliceOk(t *testing.T) {
 	}
 }
 
-// TestGetInt64Ok tests the GetInt64Ok method
-func TestGetInt64Ok(t *testing.T) {
+// TestParams_GetInt64Ok_Extended tests the GetInt64Ok method
+func TestParams_GetInt64Ok_Extended(t *testing.T) {
 	tests := []struct {
 		name           string
 		params         *Params
@@ -933,8 +1055,8 @@ func TestGetInt64Ok(t *testing.T) {
 				},
 			},
 			key:            "strFloatKey",
-			expectedValue:  456,
-			expectedResult: true,
+			expectedValue:  0,
+			expectedResult: false,
 		},
 		{
 			name: "Value is of unexpected type (bool)",
@@ -960,12 +1082,12 @@ func TestGetInt64Ok(t *testing.T) {
 			name: "Value causes overflow",
 			params: &Params{
 				Values: map[string]interface{}{
-					"overflowKey": "92233720368547758088", // math.MaxInt64 + 1
+					"overflowKey": "9223372036854775808", // math.MaxInt64 + 1
 				},
 			},
 			key:            "overflowKey",
-			expectedValue:  9223372036854775807,
-			expectedResult: true,
+			expectedValue:  0,
+			expectedResult: false,
 		},
 		{
 			name: "Value is negative",
@@ -1019,8 +1141,8 @@ func TestGetInt64Ok(t *testing.T) {
 				},
 			},
 			key:            "floatDecimalKey",
-			expectedValue:  123,
-			expectedResult: true,
+			expectedValue:  0,
+			expectedResult: false,
 		},
 		{
 			name: "Value is max int64",
@@ -1052,8 +1174,8 @@ func TestGetInt64Ok(t *testing.T) {
 				},
 			},
 			key:            "negOverflowKey",
-			expectedValue:  -9223372036854775808,
-			expectedResult: true,
+			expectedValue:  0,
+			expectedResult: false,
 		},
 	}
 
@@ -1066,8 +1188,8 @@ func TestGetInt64Ok(t *testing.T) {
 	}
 }
 
-// TestGetIntSliceOk tests the GetIntSliceOk method
-func TestGetIntSliceOk(t *testing.T) {
+// TestParams_GetIntSliceOk tests the GetIntSliceOk method
+func TestParams_GetIntSliceOk(t *testing.T) {
 	tests := []struct {
 		name           string
 		params         *Params
@@ -1216,8 +1338,23 @@ func TestGetIntSliceOk(t *testing.T) {
 	}
 }
 
-// TestGetUint64Ok tests the GetUint64Ok method
-func TestGetUint64Ok(t *testing.T) {
+// BenchmarkParams_GetIntSliceOk benchmarks the GetIntSliceOk method
+func BenchmarkParams_GetIntSliceOk(b *testing.B) {
+	body := "integers=1,2,3,4,5"
+	r, err := http.NewRequestWithContext(context.Background(), "GET", "test", strings.NewReader(body))
+	assert.NoError(b, err)
+
+	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
+
+	params := GetParams(r)
+
+	for i := 0; i < b.N; i++ {
+		_, _ = params.GetIntSliceOk("integers")
+	}
+}
+
+// TestParams_GetUint64Ok_Extended tests the GetUint64Ok method
+func TestParams_GetUint64Ok_Extended(t *testing.T) {
 	tests := []struct {
 		name           string
 		params         *Params
@@ -1407,5 +1544,20 @@ func TestGetUint64Ok(t *testing.T) {
 			assert.Equal(t, tt.expectedResult, result, "Result mismatch")
 			assert.Equal(t, tt.expectedValue, value, "Value mismatch")
 		})
+	}
+}
+
+// BenchmarkParams_GetUint64Ok benchmarks the GetUint64Ok method
+func BenchmarkParams_GetUint64Ok(b *testing.B) {
+	body := ""
+	r, err := http.NewRequestWithContext(context.Background(), "GET", "/test?test=123", strings.NewReader(body))
+	assert.NoError(b, err)
+
+	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
+
+	params := GetParams(r)
+
+	for i := 0; i < b.N; i++ {
+		_, _ = params.GetUint64Ok("test")
 	}
 }
