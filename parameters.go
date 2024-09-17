@@ -100,11 +100,15 @@ func (p *Params) GetFloat(key string) float64 {
 func (p *Params) GetFloatSliceOk(key string) ([]float64, bool) {
 	val, ok := p.Get(key)
 	if ok {
-		switch val.(type) { //nolint:gosimple // this is valid
+		switch v := val.(type) {
 		case []float64:
-			return val.([]float64), true //nolint:gosimple // this is valid
+			return v, true
 		case string:
-			raw := strings.Split(val.(string), ",") //nolint:gosimple // this is valid
+			if v == "" {
+				// Return an empty slice and true
+				return []float64{}, true
+			}
+			raw := strings.Split(v, ",")
 			slice := make([]float64, len(raw))
 			for i, k := range raw {
 				if num, err := strconv.ParseFloat(k, 64); err == nil {
@@ -115,7 +119,7 @@ func (p *Params) GetFloatSliceOk(key string) ([]float64, bool) {
 			}
 			return slice, true
 		case []interface{}:
-			raw := val.([]interface{})
+			raw := v
 			slice := make([]float64, len(raw))
 			for i, k := range raw {
 				if num, floatOk := k.(float64); floatOk {
@@ -126,9 +130,13 @@ func (p *Params) GetFloatSliceOk(key string) ([]float64, bool) {
 					} else {
 						return slice, false
 					}
+				} else {
+					return slice, false
 				}
 			}
 			return slice, true
+		default:
+			return []float64{}, false
 		}
 	}
 	return []float64{}, false
@@ -165,19 +173,44 @@ func (p *Params) GetBool(key string) bool {
 
 // GetIntOk get param by key, return integer
 func (p *Params) GetIntOk(key string) (int, bool) {
-	val, _ := p.Get(key)
-	var err error
-	switch v := val.(type) {
-	case []byte:
-		val, err = strconv.ParseFloat(string(v), 64)
-	case string:
-		val, err = strconv.ParseFloat(v, 64)
+	val, ok := p.Get(key)
+	if !ok || val == nil {
+		return 0, false
 	}
-	if err == nil {
-		if integerValue, ok := val.(int64); ok {
-			return int(integerValue), true
-		} else if floatValue, okF := val.(float64); okF {
-			return int(floatValue), true
+
+	switch v := val.(type) {
+	case int:
+		return v, true
+	case int8, int16, int32, int64:
+		return int(reflect.ValueOf(v).Int()), true
+	case uint, uint8, uint16, uint32, uint64:
+		u := reflect.ValueOf(v).Uint()
+		if u <= uint64(math.MaxInt) {
+			return int(u), true
+		}
+		return 0, false // Overflow
+	case float32, float64:
+		return int(v.(float64)), true
+	case string:
+		if parsedInt, err := strconv.ParseInt(v, 10, 64); err == nil {
+			if parsedInt >= int64(math.MinInt) && parsedInt <= int64(math.MaxInt) {
+				return int(parsedInt), true
+			}
+			return 0, false // Overflow
+		}
+		if parsedFloat, err := strconv.ParseFloat(v, 64); err == nil {
+			return int(parsedFloat), true
+		}
+	case []byte:
+		s := string(v)
+		if parsedInt, err := strconv.ParseInt(s, 10, 64); err == nil {
+			if parsedInt >= int64(math.MinInt) && parsedInt <= int64(math.MaxInt) {
+				return int(parsedInt), true
+			}
+			return 0, false // Overflow
+		}
+		if parsedFloat, err := strconv.ParseFloat(s, 64); err == nil {
+			return int(parsedFloat), true
 		}
 	}
 	return 0, false
