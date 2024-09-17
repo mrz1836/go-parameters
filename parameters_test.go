@@ -1004,7 +1004,7 @@ func TestGetInt64Ok(t *testing.T) {
 			name: "Value is invalid string",
 			params: &Params{
 				Values: map[string]interface{}{
-					"invalidStrKey": "notanumber",
+					"invalidStrKey": "not_a_number",
 				},
 			},
 			key:            "invalidStrKey",
@@ -1060,6 +1060,350 @@ func TestGetInt64Ok(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			value, result := tt.params.GetInt64Ok(tt.key)
+			assert.Equal(t, tt.expectedResult, result, "Result mismatch")
+			assert.Equal(t, tt.expectedValue, value, "Value mismatch")
+		})
+	}
+}
+
+// TestGetIntSliceOk tests the GetIntSliceOk method
+func TestGetIntSliceOk(t *testing.T) {
+	tests := []struct {
+		name           string
+		params         *Params
+		key            string
+		expectedSlice  []int
+		expectedResult bool
+	}{
+		{
+			name: "Value is []int",
+			params: &Params{
+				Values: map[string]interface{}{
+					"integers": []int{1, 2, 3},
+				},
+			},
+			key:            "integers",
+			expectedSlice:  []int{1, 2, 3},
+			expectedResult: true,
+		},
+		{
+			name: "Value is comma-separated string",
+			params: &Params{
+				Values: map[string]interface{}{
+					"integers": "4,5,6",
+				},
+			},
+			key:            "integers",
+			expectedSlice:  []int{4, 5, 6},
+			expectedResult: true,
+		},
+		{
+			name: "Value is []byte of comma-separated integers",
+			params: &Params{
+				Values: map[string]interface{}{
+					"integers": []byte("7,8,9"),
+				},
+			},
+			key:            "integers",
+			expectedSlice:  []int{7, 8, 9},
+			expectedResult: true,
+		},
+		{
+			name: "Value is []interface{} with integers",
+			params: &Params{
+				Values: map[string]interface{}{
+					"integers": []interface{}{10, 11, 12},
+				},
+			},
+			key:            "integers",
+			expectedSlice:  []int{10, 11, 12},
+			expectedResult: true,
+		},
+		{
+			name: "Value is []interface{} with strings",
+			params: &Params{
+				Values: map[string]interface{}{
+					"integers": []interface{}{"13", "14", "15"},
+				},
+			},
+			key:            "integers",
+			expectedSlice:  []int{13, 14, 15},
+			expectedResult: true,
+		},
+		{
+			name: "Value is []interface{} with float64",
+			params: &Params{
+				Values: map[string]interface{}{
+					"integers": []interface{}{16.0, 17.0, 18.0},
+				},
+			},
+			key:            "integers",
+			expectedSlice:  []int{16, 17, 18},
+			expectedResult: true,
+		},
+		{
+			name: "Value is nil",
+			params: &Params{
+				Values: map[string]interface{}{
+					"integers": nil,
+				},
+			},
+			key:            "integers",
+			expectedSlice:  nil,
+			expectedResult: true,
+		},
+		{
+			name: "Value is empty string",
+			params: &Params{
+				Values: map[string]interface{}{
+					"integers": "",
+				},
+			},
+			key:            "integers",
+			expectedSlice:  nil,
+			expectedResult: true,
+		},
+		{
+			name: "Value is of unexpected type (bool)",
+			params: &Params{
+				Values: map[string]interface{}{
+					"integers": true,
+				},
+			},
+			key:            "integers",
+			expectedSlice:  nil,
+			expectedResult: true,
+		},
+		{
+			name: "Value contains invalid data in string",
+			params: &Params{
+				Values: map[string]interface{}{
+					"integers": "19,invalid,20",
+				},
+			},
+			key:            "integers",
+			expectedSlice:  []int{19},
+			expectedResult: false,
+		},
+		{
+			name: "Value contains invalid data in []interface{}",
+			params: &Params{
+				Values: map[string]interface{}{
+					"integers": []interface{}{21, "invalid", 22},
+				},
+			},
+			key:            "integers",
+			expectedSlice:  []int{21},
+			expectedResult: false,
+		},
+		{
+			name: "Key does not exist",
+			params: &Params{
+				Values: map[string]interface{}{},
+			},
+			key:            "missing_key",
+			expectedSlice:  []int{},
+			expectedResult: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			slice, result := tt.params.GetIntSliceOk(tt.key)
+			assert.Equal(t, tt.expectedResult, result, "Result mismatch")
+			assert.Equal(t, tt.expectedSlice, slice, "Slice mismatch")
+		})
+	}
+}
+
+// TestGetUint64Ok tests the GetUint64Ok method
+func TestGetUint64Ok(t *testing.T) {
+	tests := []struct {
+		name           string
+		params         *Params
+		key            string
+		expectedValue  uint64
+		expectedResult bool
+	}{
+		{
+			name: "Value is uint64",
+			params: &Params{
+				Values: map[string]interface{}{
+					"uint64Key": uint64(123456789),
+				},
+			},
+			key:            "uint64Key",
+			expectedValue:  123456789,
+			expectedResult: true,
+		},
+		{
+			name: "Value is string representing non-negative integer",
+			params: &Params{
+				Values: map[string]interface{}{
+					"strUintKey": "987654321",
+				},
+			},
+			key:            "strUintKey",
+			expectedValue:  987654321,
+			expectedResult: true,
+		},
+		{
+			name: "Value is string representing negative integer",
+			params: &Params{
+				Values: map[string]interface{}{
+					"strNegIntKey": "-12345",
+				},
+			},
+			key:            "strNegIntKey",
+			expectedValue:  0,
+			expectedResult: false,
+		},
+		{
+			name: "Value is int64 (positive)",
+			params: &Params{
+				Values: map[string]interface{}{
+					"int64PosKey": int64(12345),
+				},
+			},
+			key:            "int64PosKey",
+			expectedValue:  12345,
+			expectedResult: true,
+		},
+		{
+			name: "Value is int64 (negative)",
+			params: &Params{
+				Values: map[string]interface{}{
+					"int64NegKey": int64(-67890),
+				},
+			},
+			key:            "int64NegKey",
+			expectedValue:  0,
+			expectedResult: false,
+		},
+		{
+			name: "Value is float64 (positive)",
+			params: &Params{
+				Values: map[string]interface{}{
+					"float64PosKey": 123.0,
+				},
+			},
+			key:            "float64PosKey",
+			expectedValue:  123,
+			expectedResult: true,
+		},
+		{
+			name: "Value is float64 (negative)",
+			params: &Params{
+				Values: map[string]interface{}{
+					"float64NegKey": -456.0,
+				},
+			},
+			key:            "float64NegKey",
+			expectedValue:  0,
+			expectedResult: false,
+		},
+		{
+			name: "Value is []byte representing non-negative integer",
+			params: &Params{
+				Values: map[string]interface{}{
+					"byteKey": []byte("654321"),
+				},
+			},
+			key:            "byteKey",
+			expectedValue:  654321,
+			expectedResult: true,
+		},
+		{
+			name: "Value is of unexpected type (bool)",
+			params: &Params{
+				Values: map[string]interface{}{
+					"boolKey": true,
+				},
+			},
+			key:            "boolKey",
+			expectedValue:  0,
+			expectedResult: false,
+		},
+		{
+			name: "Key does not exist",
+			params: &Params{
+				Values: map[string]interface{}{},
+			},
+			key:            "missingKey",
+			expectedValue:  0,
+			expectedResult: false,
+		},
+		{
+			name: "Value causes overflow",
+			params: &Params{
+				Values: map[string]interface{}{
+					"overflowKey": strconv.FormatUint(math.MaxUint64, 10),
+				},
+			},
+			key:            "overflowKey",
+			expectedValue:  math.MaxUint64,
+			expectedResult: true,
+		},
+		{
+			name: "Value is zero",
+			params: &Params{
+				Values: map[string]interface{}{
+					"zeroKey": 0,
+				},
+			},
+			key:            "zeroKey",
+			expectedValue:  0,
+			expectedResult: true,
+		},
+		{
+			name: "Value is string representing float",
+			params: &Params{
+				Values: map[string]interface{}{
+					"strFloatKey": "123.456",
+				},
+			},
+			key:            "strFloatKey",
+			expectedValue:  0,
+			expectedResult: false,
+		},
+		{
+			name: "Value is string representing negative float",
+			params: &Params{
+				Values: map[string]interface{}{
+					"strNegFloatKey": "-789.123",
+				},
+			},
+			key:            "strNegFloatKey",
+			expectedValue:  0,
+			expectedResult: false,
+		},
+		{
+			name: "Value is uint (positive)",
+			params: &Params{
+				Values: map[string]interface{}{
+					"uintKey": uint(55555),
+				},
+			},
+			key:            "uintKey",
+			expectedValue:  55555,
+			expectedResult: true,
+		},
+		{
+			name: "Value is string representing number larger than uint64",
+			params: &Params{
+				Values: map[string]interface{}{
+					"overflowKey": "18446744073709551616", // math.MaxUint64 + 1
+				},
+			},
+			key:            "overflowKey",
+			expectedValue:  0,
+			expectedResult: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			value, result := tt.params.GetUint64Ok(tt.key)
 			assert.Equal(t, tt.expectedResult, result, "Result mismatch")
 			assert.Equal(t, tt.expectedValue, value, "Value mismatch")
 		})

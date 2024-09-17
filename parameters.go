@@ -294,55 +294,52 @@ func (p *Params) GetInt64(key string) int64 {
 func (p *Params) GetIntSliceOk(key string) ([]int, bool) {
 	val, ok := p.Get(key)
 	if ok {
-		switch val.(type) { //nolint:gosimple // this is valid
+		switch v := val.(type) {
 		case []int:
-			return val.([]int), true //nolint:gosimple // this is valid
+			return v, true
 		case []byte:
-			val = string(val.([]byte))
-			raw := strings.Split(val.(string), ",")
-			slice := make([]int, len(raw))
-			for i, k := range raw {
-				if num, err := strconv.ParseInt(
-					k, 10, 64,
-				); err == nil {
-					slice[i] = int(num)
+			valStr := string(v)
+			raw := strings.Split(valStr, ",")
+			slice := make([]int, 0, len(raw)) // Use capacity but start with length 0
+			for _, k := range raw {
+				if num, err := strconv.ParseInt(k, 10, 64); err == nil {
+					slice = append(slice, int(num))
 				} else {
-					return slice, true
+					return slice, false
 				}
 			}
 			return slice, true
 		case string:
-			if len(val.(string)) > 0 { //nolint:gosimple // this is valid
-				raw := strings.Split(val.(string), ",") //nolint:gosimple // this is valid
-				slice := make([]int, len(raw))
-				for i, k := range raw {
-					if num, err := strconv.ParseInt(
-						k, 10, 64,
-					); err == nil {
-						slice[i] = int(num)
+			if len(v) > 0 {
+				raw := strings.Split(v, ",")
+				slice := make([]int, 0, len(raw)) // Use capacity but start with length 0
+				for _, k := range raw {
+					if num, err := strconv.ParseInt(k, 10, 64); err == nil {
+						slice = append(slice, int(num))
 					} else {
-						return slice, true
+						return slice, false
 					}
 				}
 				return slice, true
 			}
 			return nil, true
 		case []interface{}:
-			raw := val.([]interface{})
-			slice := make([]int, len(raw))
-			for i, k := range raw {
-				if num, found := k.(int); found {
-					slice[i] = num
-				} else if numF, foundF := k.(float64); foundF {
-					slice[i] = int(numF)
-				} else if numS, foundS := k.(string); foundS {
-					if parsed, err := strconv.ParseInt(
-						numS, 10, 64,
-					); err == nil {
-						slice[i] = int(parsed)
+			raw := v
+			slice := make([]int, 0, len(raw)) // Use capacity but start with length 0
+			for _, k := range raw {
+				switch num := k.(type) {
+				case int:
+					slice = append(slice, num)
+				case float64:
+					slice = append(slice, int(num))
+				case string:
+					if parsed, err := strconv.ParseInt(num, 10, 64); err == nil {
+						slice = append(slice, int(parsed))
 					} else {
-						return slice, true
+						return slice, false
 					}
+				default:
+					return slice, false
 				}
 			}
 			return slice, true
@@ -362,41 +359,43 @@ func (p *Params) GetIntSlice(key string) []int {
 // GetUint64Ok get param by key, return unsigned integer
 func (p *Params) GetUint64Ok(key string) (uint64, bool) {
 	val, ok := p.Get(key)
-	if stringValue, sok := val.(string); sok {
-		var err error
-		val, err = strconv.ParseFloat(stringValue, 64)
-		ok = err == nil && val.(float64) >= 0
+	if !ok || val == nil {
+		return 0, false
 	}
-	if ok {
-		var valInt int64
-		var valUint uint64
-		if valInt, ok = val.(int64); ok {
-			if valInt < 0 {
-				val = uint64(0)
-			} else {
-				val = uint64(valInt)
-			}
+
+	switch v := val.(type) {
+	case uint64:
+		return v, true
+	case uint, uint8, uint16, uint32:
+		return reflect.ValueOf(v).Uint(), true
+	case int, int8, int16, int32, int64:
+		i := reflect.ValueOf(v).Int()
+		if i >= 0 {
+			return uint64(i), true
 		}
-		if valUint, ok = val.(uint64); ok {
-			return valUint, true
-		} else if valUint, ok := val.(uint); ok {
-			return uint64(valUint), true
-		} else if valUint, ok := val.(uint8); ok {
-			return uint64(valUint), true
-		} else if valUint, ok := val.(uint16); ok {
-			return uint64(valUint), true
-		} else if valUint, ok := val.(uint32); ok {
-			return uint64(valUint), true
-		} else if valFloat, ok := val.(float64); valFloat >= 0 && ok {
-			return uint64(valFloat), true
-		} else if valByte, ok := val.([]byte); ok {
-			var err error
-			valFloat, err = strconv.ParseFloat(string(valByte), 64)
-			ok = err == nil && valFloat >= 0
-			return uint64(valFloat), ok
+		return 0, false
+	case float32, float64:
+		f := reflect.ValueOf(v).Float()
+		if f >= 0 && f == math.Trunc(f) && f <= float64(math.MaxUint64) {
+			return uint64(f), true
 		}
+		return 0, false
+	case string:
+		if parsedUint, err := strconv.ParseUint(v, 10, 64); err == nil {
+			return parsedUint, true
+		}
+		// Do not parse strings as float64; return false if parsing fails
+		return 0, false
+	case []byte:
+		s := string(v)
+		if parsedUint, err := strconv.ParseUint(s, 10, 64); err == nil {
+			return parsedUint, true
+		}
+		// Do not parse []byte as float64; return false if parsing fails
+		return 0, false
+	default:
+		return 0, false
 	}
-	return 0, false
 }
 
 // GetUint64 get param by key, return unsigned integer
