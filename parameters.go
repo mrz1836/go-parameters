@@ -332,10 +332,14 @@ func (p *Params) GetIntSliceOk(key string) ([]int, bool) {
 		case []byte:
 			valStr := string(v)
 			raw := strings.Split(valStr, ",")
-			slice := make([]int, 0, len(raw)) // Use capacity but start with length 0
+			slice := make([]int, 0, len(raw))
 			for _, k := range raw {
 				if num, err := strconv.ParseInt(k, 10, 64); err == nil {
-					slice = append(slice, int(num))
+					if num >= int64(math.MinInt) && num <= int64(math.MaxInt) {
+						slice = append(slice, int(num))
+					} else {
+						return slice, false
+					}
 				} else {
 					return slice, false
 				}
@@ -344,10 +348,14 @@ func (p *Params) GetIntSliceOk(key string) ([]int, bool) {
 		case string:
 			if len(v) > 0 {
 				raw := strings.Split(v, ",")
-				slice := make([]int, 0, len(raw)) // Use capacity but start with length 0
+				slice := make([]int, 0, len(raw))
 				for _, k := range raw {
 					if num, err := strconv.ParseInt(k, 10, 64); err == nil {
-						slice = append(slice, int(num))
+						if num >= int64(math.MinInt) && num <= int64(math.MaxInt) {
+							slice = append(slice, int(num))
+						} else {
+							return slice, false
+						}
 					} else {
 						return slice, false
 					}
@@ -357,16 +365,24 @@ func (p *Params) GetIntSliceOk(key string) ([]int, bool) {
 			return nil, true
 		case []interface{}:
 			raw := v
-			slice := make([]int, 0, len(raw)) // Use capacity but start with length 0
+			slice := make([]int, 0, len(raw))
 			for _, k := range raw {
 				switch num := k.(type) {
 				case int:
 					slice = append(slice, num)
 				case float64:
-					slice = append(slice, int(num))
+					if num >= float64(math.MinInt) && num <= float64(math.MaxInt) {
+						slice = append(slice, int(num))
+					} else {
+						return slice, false
+					}
 				case string:
 					if parsed, err := strconv.ParseInt(num, 10, 64); err == nil {
-						slice = append(slice, int(parsed))
+						if parsed >= int64(math.MinInt) && parsed <= int64(math.MaxInt) {
+							slice = append(slice, int(parsed))
+						} else {
+							return slice, false
+						}
 					} else {
 						return slice, false
 					}

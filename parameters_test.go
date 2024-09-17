@@ -1561,3 +1561,24 @@ func BenchmarkParams_GetUint64Ok(b *testing.B) {
 		_, _ = params.GetUint64Ok("test")
 	}
 }
+
+// TestParams_GetIntSliceOk_WithOverflow tests the GetIntSliceOk method with overflow
+func TestParams_GetIntSliceOk_WithOverflow(t *testing.T) {
+	var overflowValue string
+	if strconv.IntSize == 32 {
+		overflowValue = "2147483648" // math.MaxInt32 + 1
+	} else {
+		overflowValue = "9223372036854775808" // math.MaxInt64 + 1
+	}
+
+	params := &Params{
+		Values: map[string]interface{}{
+			"ints": overflowValue,
+		},
+	}
+
+	slice, ok := params.GetIntSliceOk("ints")
+
+	assert.False(t, ok, "Expected ok to be false due to overflow")
+	assert.Equal(t, []int{}, slice, "Slice mismatch")
+}
