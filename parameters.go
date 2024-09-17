@@ -284,7 +284,7 @@ func (p *Params) GetInt64Ok(key string) (int64, bool) {
 	case int64:
 		return v, true
 	case int, int8, int16, int32:
-		return int64(reflect.ValueOf(v).Int()), true
+		return reflect.ValueOf(v).Int(), true
 	case uint, uint8, uint16, uint32, uint64:
 		u := reflect.ValueOf(v).Uint()
 		if u <= uint64(math.MaxInt64) {
