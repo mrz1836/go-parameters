@@ -125,11 +125,57 @@ make test-short
 <br/>
 
 ## Benchmarks
+The following benchmarks were conducted to measure the performance of various functions in the `github.com/mrz1836/go-parameters` package. All tests were run on a machine with the following specifications:
+
+- **Operating System:** macOS (Darwin)
+- **Architecture:** ARM64
+- **CPU:** Apple M1 Max
+
+### Benchmark Results
+View the latest [benchmark results](benchmarks/benchmarks-latest.md)
+
+| Benchmark                   |  Iterations |    ns/op | B/op | allocs/op |
+|-----------------------------|------------:|---------:|-----:|----------:|
+| **UniqueUint64**            |  13,989,841 | 84.49 ns | 64 B |         1 |
+| **GetParams_ParseJSONBody** | 209,700,817 | 5.721 ns |  0 B |         0 |
+| **GetParams**               | 209,668,894 | 5.719 ns |  0 B |         0 |
+| **Params_GetStringOk**      |  37,573,434 | 31.96 ns | 16 B |         1 |
+| **Params_GetBoolOk**        |  36,349,316 | 33.15 ns | 16 B |         1 |
+| **Params_GetBytesOk**       |  38,539,616 | 31.52 ns | 16 B |         1 |
+| **Params_GetBool**          |  35,637,433 | 32.57 ns | 16 B |         1 |
+| **Params_GetFloatOk**       |  22,064,586 | 54.69 ns | 16 B |         1 |
+| **Params_GetIntOk**         |  28,992,304 | 41.78 ns | 16 B |         1 |
+| **Params_GetInt64Ok**       |  28,752,844 | 41.77 ns | 16 B |         1 |
+| **Params_GetIntSliceOk**    |  38,099,671 | 31.59 ns | 16 B |         1 |
+| **Params_GetUint64Ok**      |  29,921,580 | 39.68 ns | 16 B |         1 |
+
+### Benchmark Details
+
+- **`UniqueUint64`**: Measures the performance of generating unique `uint64` values.
+- **`GetParams_ParseJSONBody`**: Benchmarks parsing a JSON body into parameters.
+- **`GetParams`**: Tests retrieving parameters without parsing.
+- **`Params_GetStringOk`**: Evaluates fetching a string parameter with success indication.
+- **`Params_GetBoolOk`**: Assesses fetching a boolean parameter with success indication.
+- **`Params_GetBytesOk`**: Measures retrieving a byte slice parameter with success indication.
+- **`Params_GetBool`**: Benchmarks fetching a boolean parameter without success indication.
+- **`Params_GetFloatOk`**: Tests fetching a float parameter with success indication.
+- **`Params_GetIntOk`**: Evaluates fetching an integer parameter with success indication.
+- **`Params_GetInt64Ok`**: Measures fetching a 64-bit integer parameter with success indication.
+- **`Params_GetIntSliceOk`**: Benchmarks retrieving a slice of integers with success indication.
+- **`Params_GetUint64Ok`**: Tests fetching an unsigned 64-bit integer parameter with success indication.
+
+### Benchmark Notes
+
+- **Iterations**: The number of times the benchmark function was executed.
+- **ns/op**: Nanoseconds per operation, indicating the average time taken for each operation.
+- **B/op**: Bytes allocated per operation, showing the memory usage.
+- **allocs/op**: Allocations per operation, indicating how many memory allocations occurred per operation.
+
+### How to Run Benchmarks
 Run the Go benchmarks:
 ```shell script
 make bench
 ```
-
 <br/>
 
 ## Code Standards
