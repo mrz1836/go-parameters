@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"math"
 	"net/http"
+	"net/http/httptest"
 	"reflect"
 	"strconv"
 	"strings"
@@ -13,6 +14,7 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
+	"github.com/julienschmidt/httprouter"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -21,7 +23,7 @@ const testJSONParam = `{ "test": true }`
 // TestGetParams_ParseJSONBody tests the method with JSON body
 func TestGetParams_ParseJSONBody(t *testing.T) {
 
-	r, err := http.NewRequestWithContext(context.Background(), "POST", "test", strings.NewReader(testJSONParam))
+	r, err := http.NewRequestWithContext(context.Background(), http.MethodPost, "test", strings.NewReader(testJSONParam))
 	assert.NoError(t, err)
 	assert.NotNil(t, r)
 
@@ -38,7 +40,7 @@ func TestGetParams_ParseJSONBody(t *testing.T) {
 
 // BenchmarkGetParams_ParseJSONBody benchmarks the method
 func BenchmarkGetParams_ParseJSONBody(b *testing.B) {
-	r, err := http.NewRequestWithContext(context.Background(), "POST", "test", strings.NewReader(testJSONParam))
+	r, err := http.NewRequestWithContext(context.Background(), http.MethodPost, "test", strings.NewReader(testJSONParam))
 	assert.NoError(b, err)
 	r.Header.Set("Content-Type", "application/json")
 
@@ -52,7 +54,7 @@ func BenchmarkGetParams_ParseJSONBody(b *testing.B) {
 // TestGetParams_ParseJSONBodyContentType tests the method with JSON body and content type
 func TestGetParams_ParseJSONBodyContentType(t *testing.T) {
 
-	r, err := http.NewRequestWithContext(context.Background(), "POST", "test", strings.NewReader(testJSONParam))
+	r, err := http.NewRequestWithContext(context.Background(), http.MethodPost, "test", strings.NewReader(testJSONParam))
 	assert.NoError(t, err)
 	r.Header.Set("Content-Type", "application/json; charset=utf8")
 
@@ -68,7 +70,7 @@ func TestGetParams_ParseJSONBodyContentType(t *testing.T) {
 // TestGetParams_ParseNestedJSONBody tests the method with nested JSON
 func TestGetParams_ParseNestedJSONBody(t *testing.T) {
 	body := "{ \"test\": true, \"coordinate\": { \"lat\": 50.505, \"lon\": 10.101 }}"
-	r, err := http.NewRequestWithContext(context.Background(), "POST", "test", strings.NewReader(body))
+	r, err := http.NewRequestWithContext(context.Background(), http.MethodPost, "test", strings.NewReader(body))
 	assert.NoError(t, err)
 	r.Header.Set("Content-Type", "application/json")
 
@@ -107,7 +109,7 @@ func TestGetParams_ParseNestedJSONBody(t *testing.T) {
 // TestGetParams tests the GetParams method
 func TestGetParams(t *testing.T) {
 	body := ""
-	r, err := http.NewRequestWithContext(context.Background(), "GET", "test?test=true", strings.NewReader(body))
+	r, err := http.NewRequestWithContext(context.Background(), http.MethodGet, "test?test=true", strings.NewReader(body))
 	assert.NoError(t, err)
 
 	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
@@ -122,7 +124,7 @@ func TestGetParams(t *testing.T) {
 // BenchmarkGetParams benchmarks the method
 func BenchmarkGetParams(b *testing.B) {
 	body := ""
-	r, err := http.NewRequestWithContext(context.Background(), "GET", "test?test=true", strings.NewReader(body))
+	r, err := http.NewRequestWithContext(context.Background(), http.MethodGet, "test?test=true", strings.NewReader(body))
 	assert.NoError(b, err)
 
 	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
@@ -135,7 +137,7 @@ func BenchmarkGetParams(b *testing.B) {
 // TestParams_GetStringOk tests the GetStringOk method
 func TestParams_GetStringOk(t *testing.T) {
 	body := ""
-	r, err := http.NewRequestWithContext(context.Background(), "GET", "/test?test=string", strings.NewReader(body))
+	r, err := http.NewRequestWithContext(context.Background(), http.MethodGet, "/test?test=string", strings.NewReader(body))
 	assert.NoError(t, err)
 
 	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
@@ -153,7 +155,7 @@ func TestParams_GetStringOk(t *testing.T) {
 // BenchmarkGetStringOk benchmarks the method
 func BenchmarkParams_GetStringOk(b *testing.B) {
 	body := ""
-	r, err := http.NewRequestWithContext(context.Background(), "GET", "/test?test=string", strings.NewReader(body))
+	r, err := http.NewRequestWithContext(context.Background(), http.MethodGet, "/test?test=string", strings.NewReader(body))
 	assert.NoError(b, err)
 
 	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
@@ -168,7 +170,7 @@ func BenchmarkParams_GetStringOk(b *testing.B) {
 // TestParams_GetBoolOk tests the GetBoolOk method
 func TestParams_GetBoolOk(t *testing.T) {
 	body := ""
-	r, err := http.NewRequestWithContext(context.Background(), "GET", "/test?test=true", strings.NewReader(body))
+	r, err := http.NewRequestWithContext(context.Background(), http.MethodGet, "/test?test=true", strings.NewReader(body))
 	assert.NoError(t, err)
 
 	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
@@ -183,7 +185,7 @@ func TestParams_GetBoolOk(t *testing.T) {
 // BenchmarkGetBoolOk benchmarks the method
 func BenchmarkParams_GetBoolOk(b *testing.B) {
 	body := ""
-	r, err := http.NewRequestWithContext(context.Background(), "GET", "/test?test=true", strings.NewReader(body))
+	r, err := http.NewRequestWithContext(context.Background(), http.MethodGet, "/test?test=true", strings.NewReader(body))
 	assert.NoError(b, err)
 
 	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
@@ -204,7 +206,7 @@ func TestParams_GetBytesOk(t *testing.T) {
 	testString := string(testBytes)
 
 	body := ""
-	r, err := http.NewRequestWithContext(context.Background(), "GET", "/test?test="+testString, strings.NewReader(body))
+	r, err := http.NewRequestWithContext(context.Background(), http.MethodGet, "/test?test="+testString, strings.NewReader(body))
 	assert.NoError(t, err)
 
 	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
@@ -228,7 +230,7 @@ func BenchmarkParams_GetBytesOk(b *testing.B) {
 	testString := string(testBytes)
 
 	body := ""
-	r, err := http.NewRequestWithContext(context.Background(), "GET", "/test?test="+testString, strings.NewReader(body))
+	r, err := http.NewRequestWithContext(context.Background(), http.MethodGet, "/test?test="+testString, strings.NewReader(body))
 	assert.NoError(b, err)
 
 	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
@@ -243,7 +245,7 @@ func BenchmarkParams_GetBytesOk(b *testing.B) {
 // BenchmarkParams_GetBool benchmarks the method
 func BenchmarkParams_GetBool(b *testing.B) {
 	body := ""
-	r, err := http.NewRequestWithContext(context.Background(), "GET", "/test?test=true", strings.NewReader(body))
+	r, err := http.NewRequestWithContext(context.Background(), http.MethodGet, "/test?test=true", strings.NewReader(body))
 	assert.NoError(b, err)
 
 	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
@@ -258,7 +260,7 @@ func BenchmarkParams_GetBool(b *testing.B) {
 // TestParams_GetFloatOk tests the GetFloatOk method
 func TestParams_GetFloatOk(t *testing.T) {
 	body := ""
-	r, err := http.NewRequestWithContext(context.Background(), "GET", "/test?test=123.1234", strings.NewReader(body))
+	r, err := http.NewRequestWithContext(context.Background(), http.MethodGet, "/test?test=123.1234", strings.NewReader(body))
 	assert.NoError(t, err)
 
 	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
@@ -276,7 +278,7 @@ func TestParams_GetFloatOk(t *testing.T) {
 // BenchmarkParams_GetFloatOk benchmarks the method
 func BenchmarkParams_GetFloatOk(b *testing.B) {
 	body := ""
-	r, err := http.NewRequestWithContext(context.Background(), "GET", "/test?test=123.1234", strings.NewReader(body))
+	r, err := http.NewRequestWithContext(context.Background(), http.MethodGet, "/test?test=123.1234", strings.NewReader(body))
 	assert.NoError(b, err)
 
 	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
@@ -291,7 +293,7 @@ func BenchmarkParams_GetFloatOk(b *testing.B) {
 // TestParams_GetFloatOk_Zero tests the GetFloatOk method
 func TestParams_GetFloatOk_Zero(t *testing.T) {
 	body := ""
-	r, err := http.NewRequestWithContext(context.Background(), "GET", "/test?test=null", strings.NewReader(body))
+	r, err := http.NewRequestWithContext(context.Background(), http.MethodGet, "/test?test=null", strings.NewReader(body))
 	assert.NoError(t, err)
 
 	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
@@ -306,7 +308,7 @@ func TestParams_GetFloatOk_Zero(t *testing.T) {
 // TestParams_GetIntOk tests the GetIntOk method
 func TestParams_GetIntOk(t *testing.T) {
 	body := ""
-	r, err := http.NewRequestWithContext(context.Background(), "GET", "/test?test=123", strings.NewReader(body))
+	r, err := http.NewRequestWithContext(context.Background(), http.MethodGet, "/test?test=123", strings.NewReader(body))
 	assert.NoError(t, err)
 
 	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
@@ -324,7 +326,7 @@ func TestParams_GetIntOk(t *testing.T) {
 // BenchmarkParams_GetIntOk benchmarks the method
 func BenchmarkParams_GetIntOk(b *testing.B) {
 	body := ""
-	r, err := http.NewRequestWithContext(context.Background(), "GET", "/test?test=123", strings.NewReader(body))
+	r, err := http.NewRequestWithContext(context.Background(), http.MethodGet, "/test?test=123", strings.NewReader(body))
 	assert.NoError(b, err)
 
 	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
@@ -339,7 +341,7 @@ func BenchmarkParams_GetIntOk(b *testing.B) {
 // TestParams_GetInt8Ok tests the GetInt8 method
 func TestParams_GetInt8Ok(t *testing.T) {
 	body := ""
-	r, err := http.NewRequestWithContext(context.Background(), "GET", "/test?test=123", strings.NewReader(body))
+	r, err := http.NewRequestWithContext(context.Background(), http.MethodGet, "/test?test=123", strings.NewReader(body))
 	assert.NoError(t, err)
 
 	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
@@ -354,7 +356,7 @@ func TestParams_GetInt8Ok(t *testing.T) {
 // TestParams_GetInt8TooSmall tests the GetInt8 method
 func TestParams_GetInt8TooSmall(t *testing.T) {
 	body := ""
-	r, err := http.NewRequestWithContext(context.Background(), "GET", "/test?test=-300", strings.NewReader(body))
+	r, err := http.NewRequestWithContext(context.Background(), http.MethodGet, "/test?test=-300", strings.NewReader(body))
 	assert.NoError(t, err)
 
 	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
@@ -368,7 +370,7 @@ func TestParams_GetInt8TooSmall(t *testing.T) {
 // TestParams_GetInt8TooBig tests the GetInt8 method
 func TestParams_GetInt8TooBig(t *testing.T) {
 	body := ""
-	r, err := http.NewRequestWithContext(context.Background(), "GET", "/test?test=300", strings.NewReader(body))
+	r, err := http.NewRequestWithContext(context.Background(), http.MethodGet, "/test?test=300", strings.NewReader(body))
 	assert.NoError(t, err)
 
 	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
@@ -382,7 +384,7 @@ func TestParams_GetInt8TooBig(t *testing.T) {
 // TestParams_GetInt16Ok tests the GetInt16 method
 func TestParams_GetInt16Ok(t *testing.T) {
 	body := ""
-	r, err := http.NewRequestWithContext(context.Background(), "GET", "/test?test=123", strings.NewReader(body))
+	r, err := http.NewRequestWithContext(context.Background(), http.MethodGet, "/test?test=123", strings.NewReader(body))
 	assert.NoError(t, err)
 
 	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
@@ -400,7 +402,7 @@ func TestParams_GetInt16Ok(t *testing.T) {
 // TestParams_GetInt16TooSmall tests the GetInt16 method
 func TestParams_GetInt16TooSmall(t *testing.T) {
 	body := ""
-	r, err := http.NewRequestWithContext(context.Background(), "GET", "/test?test=-32769", strings.NewReader(body))
+	r, err := http.NewRequestWithContext(context.Background(), http.MethodGet, "/test?test=-32769", strings.NewReader(body))
 	assert.NoError(t, err)
 
 	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
@@ -414,7 +416,7 @@ func TestParams_GetInt16TooSmall(t *testing.T) {
 // TestParams_GetInt16TooBig tests the GetInt16 method
 func TestParams_GetInt16TooBig(t *testing.T) {
 	body := ""
-	r, err := http.NewRequestWithContext(context.Background(), "GET", "/test?test=32769", strings.NewReader(body))
+	r, err := http.NewRequestWithContext(context.Background(), http.MethodGet, "/test?test=32769", strings.NewReader(body))
 	assert.NoError(t, err)
 
 	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
@@ -428,7 +430,7 @@ func TestParams_GetInt16TooBig(t *testing.T) {
 // TestParams_GetInt32Ok tests the GetInt32 method
 func TestParams_GetInt32Ok(t *testing.T) {
 	body := ""
-	r, err := http.NewRequestWithContext(context.Background(), "GET", "/test?test=123", strings.NewReader(body))
+	r, err := http.NewRequestWithContext(context.Background(), http.MethodGet, "/test?test=123", strings.NewReader(body))
 	assert.NoError(t, err)
 
 	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
@@ -446,7 +448,7 @@ func TestParams_GetInt32Ok(t *testing.T) {
 // TestParams_GetInt32TooSmall tests the GetInt32 method
 func TestParams_GetInt32TooSmall(t *testing.T) {
 	body := ""
-	r, err := http.NewRequestWithContext(context.Background(), "GET", fmt.Sprintf("/test?test=%d", math.MinInt32-1), strings.NewReader(body))
+	r, err := http.NewRequestWithContext(context.Background(), http.MethodGet, fmt.Sprintf("/test?test=%d", math.MinInt32-1), strings.NewReader(body))
 	assert.NoError(t, err)
 
 	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
@@ -460,7 +462,7 @@ func TestParams_GetInt32TooSmall(t *testing.T) {
 // TestParams_GetInt32TooBig tests the GetInt32 method
 func TestParams_GetInt32TooBig(t *testing.T) {
 	body := ""
-	r, err := http.NewRequestWithContext(context.Background(), "GET", fmt.Sprintf("/test?test=%d", math.MaxInt32+1), strings.NewReader(body))
+	r, err := http.NewRequestWithContext(context.Background(), http.MethodGet, fmt.Sprintf("/test?test=%d", math.MaxInt32+1), strings.NewReader(body))
 	assert.NoError(t, err)
 
 	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
@@ -474,7 +476,7 @@ func TestParams_GetInt32TooBig(t *testing.T) {
 // TestParams_GetInt64Ok tests the GetInt64 method
 func TestParams_GetInt64Ok(t *testing.T) {
 	body := ""
-	r, err := http.NewRequestWithContext(context.Background(), "GET", "/test?test=123", strings.NewReader(body))
+	r, err := http.NewRequestWithContext(context.Background(), http.MethodGet, "/test?test=123", strings.NewReader(body))
 	assert.NoError(t, err)
 
 	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
@@ -492,7 +494,7 @@ func TestParams_GetInt64Ok(t *testing.T) {
 // BenchmarkParams_GetInt64Ok benchmarks the method
 func BenchmarkParams_GetInt64Ok(b *testing.B) {
 	body := ""
-	r, err := http.NewRequestWithContext(context.Background(), "GET", "/test?test=123", strings.NewReader(body))
+	r, err := http.NewRequestWithContext(context.Background(), http.MethodGet, "/test?test=123", strings.NewReader(body))
 	assert.NoError(b, err)
 
 	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
@@ -507,7 +509,7 @@ func BenchmarkParams_GetInt64Ok(b *testing.B) {
 // TestParams_GetInt64TooSmall tests the GetInt64 method
 func TestParams_GetInt64TooSmall(t *testing.T) {
 	body := ""
-	r, err := http.NewRequestWithContext(context.Background(), "GET", fmt.Sprintf("/test?test=%d", 0), strings.NewReader(body))
+	r, err := http.NewRequestWithContext(context.Background(), http.MethodGet, fmt.Sprintf("/test?test=%d", 0), strings.NewReader(body))
 	assert.NoError(t, err)
 
 	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
@@ -521,7 +523,7 @@ func TestParams_GetInt64TooSmall(t *testing.T) {
 // TestParams_GetUint64Ok tests the GetUint64Ok method
 func TestParams_GetUint64Ok(t *testing.T) {
 	body := ""
-	r, err := http.NewRequestWithContext(context.Background(), "GET", "/test?test=123", strings.NewReader(body))
+	r, err := http.NewRequestWithContext(context.Background(), http.MethodGet, "/test?test=123", strings.NewReader(body))
 	assert.NoError(t, err)
 
 	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
@@ -552,7 +554,7 @@ func TestGetParams_Post(t *testing.T) {
 // TestParams_GetTimeOk tests the GetTimeOk method
 func TestParams_GetTimeOk(t *testing.T) {
 	body := ""
-	r, err := http.NewRequestWithContext(context.Background(), "GET", "/test?test=2020-12-31", strings.NewReader(body))
+	r, err := http.NewRequestWithContext(context.Background(), http.MethodGet, "/test?test=2020-12-31", strings.NewReader(body))
 	assert.NoError(t, err)
 
 	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
@@ -603,7 +605,7 @@ func TestGetParams_ParsePostUrlJSON(t *testing.T) {
 // TestGetParams_ParseJSONBodyMux tests the method with mux
 func TestGetParams_ParseJSONBodyMux(t *testing.T) {
 
-	r, err := http.NewRequestWithContext(context.Background(), "POST", "/test/42", strings.NewReader(testJSONParam))
+	r, err := http.NewRequestWithContext(context.Background(), http.MethodPost, "/test/42", strings.NewReader(testJSONParam))
 	assert.NoError(t, err)
 	r.Header.Set("Content-Type", "application/json")
 	m := mux.NewRouter()
@@ -867,7 +869,7 @@ func TestCustomTypeSetter(t *testing.T) {
 
 // TestMakeParsedReq will test the MakeParsedReq function
 func TestMakeParsedReq(t *testing.T) {
-	r, err := http.NewRequestWithContext(context.Background(), "GET", "test?test=true", strings.NewReader(""))
+	r, err := http.NewRequestWithContext(context.Background(), http.MethodGet, "test?test=true", strings.NewReader(""))
 	assert.NoError(t, err)
 	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
 	params := GetParams(r)
@@ -1341,7 +1343,7 @@ func TestParams_GetIntSliceOk(t *testing.T) {
 // BenchmarkParams_GetIntSliceOk benchmarks the GetIntSliceOk method
 func BenchmarkParams_GetIntSliceOk(b *testing.B) {
 	body := "integers=1,2,3,4,5"
-	r, err := http.NewRequestWithContext(context.Background(), "GET", "test", strings.NewReader(body))
+	r, err := http.NewRequestWithContext(context.Background(), http.MethodGet, "test", strings.NewReader(body))
 	assert.NoError(b, err)
 
 	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
@@ -1550,7 +1552,7 @@ func TestParams_GetUint64Ok_Extended(t *testing.T) {
 // BenchmarkParams_GetUint64Ok benchmarks the GetUint64Ok method
 func BenchmarkParams_GetUint64Ok(b *testing.B) {
 	body := ""
-	r, err := http.NewRequestWithContext(context.Background(), "GET", "/test?test=123", strings.NewReader(body))
+	r, err := http.NewRequestWithContext(context.Background(), http.MethodGet, "/test?test=123", strings.NewReader(body))
 	assert.NoError(b, err)
 
 	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
@@ -2930,6 +2932,190 @@ func TestParams_GetUint64Slice(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			data := tt.params.GetUint64Slice(tt.key)
 			assert.Equal(t, tt.expectedData, data, "Expected data to be %v, got %v", tt.expectedData, data)
+		})
+	}
+}
+
+// TestParams_Permit tests the Permit method
+func TestParams_Permit(t *testing.T) {
+	tests := []struct {
+		name         string
+		initialVals  map[string]interface{}
+		allowedKeys  []string
+		expectedVals map[string]interface{}
+	}{
+		{
+			name: "All keys are allowed",
+			initialVals: map[string]interface{}{
+				"key1": "value1",
+				"key2": "value2",
+			},
+			allowedKeys: []string{"key1", "key2"},
+			expectedVals: map[string]interface{}{
+				"key1": "value1",
+				"key2": "value2",
+			},
+		},
+		{
+			name: "No keys are allowed",
+			initialVals: map[string]interface{}{
+				"key1": "value1",
+				"key2": "value2",
+			},
+			allowedKeys:  []string{},
+			expectedVals: map[string]interface{}{},
+		},
+		{
+			name: "Some keys are allowed",
+			initialVals: map[string]interface{}{
+				"key1": "value1",
+				"key2": "value2",
+				"key3": "value3",
+			},
+			allowedKeys: []string{"key1", "key3"},
+			expectedVals: map[string]interface{}{
+				"key1": "value1",
+				"key3": "value3",
+			},
+		},
+		{
+			name: "Allowed keys list is empty",
+			initialVals: map[string]interface{}{
+				"key1": "value1",
+				"key2": "value2",
+			},
+			allowedKeys:  []string{},
+			expectedVals: map[string]interface{}{},
+		},
+		{
+			name:         "Params.Values is empty",
+			initialVals:  map[string]interface{}{},
+			allowedKeys:  []string{"key1", "key2"},
+			expectedVals: map[string]interface{}{},
+		},
+		{
+			name: "Allowed keys contain keys not present in Params.Values",
+			initialVals: map[string]interface{}{
+				"key1": "value1",
+				"key3": "value3",
+			},
+			allowedKeys: []string{"key1", "key2"},
+			expectedVals: map[string]interface{}{
+				"key1": "value1",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			params := &Params{
+				Values: tt.initialVals,
+			}
+
+			params.Permit(tt.allowedKeys)
+
+			assert.Equal(t, tt.expectedVals, params.Values, "Expected Params.Values to be %v, got %v", tt.expectedVals, params.Values)
+		})
+	}
+}
+
+// TestMakeHTTPRouterParsedReq tests the MakeHTTPRouterParsedReq function
+func TestMakeHTTPRouterParsedReq(t *testing.T) {
+	tests := []struct {
+		name           string
+		params         httprouter.Params
+		expectedValues map[string]interface{}
+	}{
+		{
+			name: "Param key contains 'id', value is uint64",
+			params: httprouter.Params{
+				httprouter.Param{Key: "user_id", Value: "12345"},
+			},
+			expectedValues: map[string]interface{}{
+				"user_id": uint64(12345),
+			},
+		},
+		{
+			name: "Param key contains 'id', value is not uint64",
+			params: httprouter.Params{
+				httprouter.Param{Key: "user_id", Value: "not_a_number"},
+			},
+			expectedValues: map[string]interface{}{
+				"user_id": "not_a_number",
+			},
+		},
+		{
+			name: "Param key does not contain 'id'",
+			params: httprouter.Params{
+				httprouter.Param{Key: "name", Value: "Alice"},
+			},
+			expectedValues: map[string]interface{}{
+				"name": "Alice",
+			},
+		},
+		{
+			name: "Multiple params",
+			params: httprouter.Params{
+				httprouter.Param{Key: "user_id", Value: "12345"},
+				httprouter.Param{Key: "session_id", Value: "fake_session_id"},
+				httprouter.Param{Key: "action", Value: "login"},
+				httprouter.Param{Key: "invalid_id", Value: "not_a_number"},
+			},
+			expectedValues: map[string]interface{}{
+				"user_id":    uint64(12345),
+				"session_id": "fake_session_id", // Cannot be parsed as uint64
+				"action":     "login",
+				"invalid_id": "not_a_number", // Cannot be parsed as uint64
+			},
+		},
+		{
+			name: "Param key contains 'id', value is empty string",
+			params: httprouter.Params{
+				httprouter.Param{Key: "product_id", Value: ""},
+			},
+			expectedValues: map[string]interface{}{
+				"product_id": "",
+			},
+		},
+		{
+			name: "Param key contains 'id', value is negative number",
+			params: httprouter.Params{
+				httprouter.Param{Key: "item_id", Value: "-1"},
+			},
+			expectedValues: map[string]interface{}{
+				"item_id": "-1",
+			},
+		},
+		{
+			name: "Param key does not contain 'id', value is numeric",
+			params: httprouter.Params{
+				httprouter.Param{Key: "count", Value: "42"},
+			},
+			expectedValues: map[string]interface{}{
+				"count": "42",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Handler to check the params
+			handler := func(_ http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+				params := GetParams(r)
+				assert.Equal(t, tt.expectedValues, params.Values)
+			}
+
+			// Wrap the handler
+			wrappedHandler := MakeHTTPRouterParsedReq(handler)
+
+			// Create a test request
+			req := httptest.NewRequest(http.MethodGet, "https://example.com", nil)
+
+			// Create a response recorder
+			rw := httptest.NewRecorder()
+
+			// Call the wrapped handler
+			wrappedHandler(rw, req, tt.params)
 		})
 	}
 }
