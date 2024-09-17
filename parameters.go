@@ -37,6 +37,9 @@ const (
 
 	// HTMLDateTimeLocal is the format used by the input type datetime-local
 	HTMLDateTimeLocal = "2006-01-02T15:04"
+
+	// MaxSafeInt is the maximum safe integer value
+	MaxSafeInt = 1 << 53 // 9007199254740992
 )
 
 // Variables for parameters package
@@ -210,6 +213,9 @@ func (p *Params) GetIntOk(key string) (int, bool) {
 	case float32, float64:
 		f := reflect.ValueOf(v).Float()
 		if f >= float64(math.MinInt) && f <= float64(math.MaxInt) && f == math.Trunc(f) {
+			if f > MaxSafeInt || f < -MaxSafeInt {
+				return 0, false // Value exceeds safe integer range
+			}
 			return int(f), true
 		}
 		return 0, false // Overflow or non-integer float

@@ -18,7 +18,7 @@ import (
 
 const testJSONParam = `{ "test": true }`
 
-// TestGetParams_ParseJSONBody
+// TestGetParams_ParseJSONBody tests the method with JSON body
 func TestGetParams_ParseJSONBody(t *testing.T) {
 
 	r, err := http.NewRequestWithContext(context.Background(), "POST", "test", strings.NewReader(testJSONParam))
@@ -49,7 +49,7 @@ func BenchmarkGetParams_ParseJSONBody(b *testing.B) {
 	}
 }
 
-// TestGetParams_ParseJSONBodyContentType
+// TestGetParams_ParseJSONBodyContentType tests the method with JSON body and content type
 func TestGetParams_ParseJSONBodyContentType(t *testing.T) {
 
 	r, err := http.NewRequestWithContext(context.Background(), "POST", "test", strings.NewReader(testJSONParam))
@@ -65,7 +65,7 @@ func TestGetParams_ParseJSONBodyContentType(t *testing.T) {
 	assert.Equal(t, true, val)
 }
 
-// TestGetParams_ParseNestedJSONBody
+// TestGetParams_ParseNestedJSONBody tests the method with nested JSON
 func TestGetParams_ParseNestedJSONBody(t *testing.T) {
 	body := "{ \"test\": true, \"coordinate\": { \"lat\": 50.505, \"lon\": 10.101 }}"
 	r, err := http.NewRequestWithContext(context.Background(), "POST", "test", strings.NewReader(body))
@@ -132,7 +132,7 @@ func BenchmarkGetParams(b *testing.B) {
 	}
 }
 
-// TestParams_GetStringOk
+// TestParams_GetStringOk tests the GetStringOk method
 func TestParams_GetStringOk(t *testing.T) {
 	body := ""
 	r, err := http.NewRequestWithContext(context.Background(), "GET", "/test?test=string", strings.NewReader(body))
@@ -165,7 +165,7 @@ func BenchmarkParams_GetStringOk(b *testing.B) {
 	}
 }
 
-// TestParams_GetBoolOk
+// TestParams_GetBoolOk tests the GetBoolOk method
 func TestParams_GetBoolOk(t *testing.T) {
 	body := ""
 	r, err := http.NewRequestWithContext(context.Background(), "GET", "/test?test=true", strings.NewReader(body))
@@ -195,7 +195,7 @@ func BenchmarkParams_GetBoolOk(b *testing.B) {
 	}
 }
 
-// TestParams_GetBytesOk
+// TestParams_GetBytesOk tests the GetBytesOk method
 func TestParams_GetBytesOk(t *testing.T) {
 	testBytes := make([]byte, 100)
 	for i := 0; i < 100; i++ {
@@ -255,7 +255,7 @@ func BenchmarkParams_GetBool(b *testing.B) {
 	}
 }
 
-// TestParams_GetFloatOk
+// TestParams_GetFloatOk tests the GetFloatOk method
 func TestParams_GetFloatOk(t *testing.T) {
 	body := ""
 	r, err := http.NewRequestWithContext(context.Background(), "GET", "/test?test=123.1234", strings.NewReader(body))
@@ -288,8 +288,8 @@ func BenchmarkParams_GetFloatOk(b *testing.B) {
 	}
 }
 
-// TestParams_GetFloatOk2
-func TestParams_GetFloatOk2(t *testing.T) {
+// TestParams_GetFloatOk_Zero tests the GetFloatOk method
+func TestParams_GetFloatOk_Zero(t *testing.T) {
 	body := ""
 	r, err := http.NewRequestWithContext(context.Background(), "GET", "/test?test=null", strings.NewReader(body))
 	assert.NoError(t, err)
@@ -303,7 +303,7 @@ func TestParams_GetFloatOk2(t *testing.T) {
 	assert.Equal(t, true, ok)
 }
 
-// TestParams_GetIntOk
+// TestParams_GetIntOk tests the GetIntOk method
 func TestParams_GetIntOk(t *testing.T) {
 	body := ""
 	r, err := http.NewRequestWithContext(context.Background(), "GET", "/test?test=123", strings.NewReader(body))
@@ -336,7 +336,7 @@ func BenchmarkParams_GetIntOk(b *testing.B) {
 	}
 }
 
-// TestParams_GetInt8Ok
+// TestParams_GetInt8Ok tests the GetInt8 method
 func TestParams_GetInt8Ok(t *testing.T) {
 	body := ""
 	r, err := http.NewRequestWithContext(context.Background(), "GET", "/test?test=123", strings.NewReader(body))
@@ -351,7 +351,7 @@ func TestParams_GetInt8Ok(t *testing.T) {
 	assert.Equal(t, int8(123), val)
 }
 
-// TestParams_GetInt8TooSmall
+// TestParams_GetInt8TooSmall tests the GetInt8 method
 func TestParams_GetInt8TooSmall(t *testing.T) {
 	body := ""
 	r, err := http.NewRequestWithContext(context.Background(), "GET", "/test?test=-300", strings.NewReader(body))
@@ -365,7 +365,7 @@ func TestParams_GetInt8TooSmall(t *testing.T) {
 	assert.Equal(t, int8(0), val)
 }
 
-// TestParams_GetInt8TooBig
+// TestParams_GetInt8TooBig tests the GetInt8 method
 func TestParams_GetInt8TooBig(t *testing.T) {
 	body := ""
 	r, err := http.NewRequestWithContext(context.Background(), "GET", "/test?test=300", strings.NewReader(body))
@@ -379,7 +379,7 @@ func TestParams_GetInt8TooBig(t *testing.T) {
 	assert.Equal(t, int8(0), val)
 }
 
-// TestParams_GetInt16Ok
+// TestParams_GetInt16Ok tests the GetInt16 method
 func TestParams_GetInt16Ok(t *testing.T) {
 	body := ""
 	r, err := http.NewRequestWithContext(context.Background(), "GET", "/test?test=123", strings.NewReader(body))
@@ -397,7 +397,7 @@ func TestParams_GetInt16Ok(t *testing.T) {
 	assert.Equal(t, int16(123), val)
 }
 
-// TestParams_GetInt16TooSmall
+// TestParams_GetInt16TooSmall tests the GetInt16 method
 func TestParams_GetInt16TooSmall(t *testing.T) {
 	body := ""
 	r, err := http.NewRequestWithContext(context.Background(), "GET", "/test?test=-32769", strings.NewReader(body))
@@ -411,7 +411,7 @@ func TestParams_GetInt16TooSmall(t *testing.T) {
 	assert.Equal(t, int16(0), val)
 }
 
-// TestParams_GetInt16TooBig
+// TestParams_GetInt16TooBig tests the GetInt16 method
 func TestParams_GetInt16TooBig(t *testing.T) {
 	body := ""
 	r, err := http.NewRequestWithContext(context.Background(), "GET", "/test?test=32769", strings.NewReader(body))
@@ -425,7 +425,7 @@ func TestParams_GetInt16TooBig(t *testing.T) {
 	assert.Equal(t, int16(0), val)
 }
 
-// TestParams_GetInt32Ok
+// TestParams_GetInt32Ok tests the GetInt32 method
 func TestParams_GetInt32Ok(t *testing.T) {
 	body := ""
 	r, err := http.NewRequestWithContext(context.Background(), "GET", "/test?test=123", strings.NewReader(body))
@@ -443,7 +443,7 @@ func TestParams_GetInt32Ok(t *testing.T) {
 	assert.Equal(t, int32(123), val)
 }
 
-// TestParams_GetInt32TooSmall
+// TestParams_GetInt32TooSmall tests the GetInt32 method
 func TestParams_GetInt32TooSmall(t *testing.T) {
 	body := ""
 	r, err := http.NewRequestWithContext(context.Background(), "GET", fmt.Sprintf("/test?test=%d", math.MinInt32-1), strings.NewReader(body))
@@ -457,7 +457,7 @@ func TestParams_GetInt32TooSmall(t *testing.T) {
 	assert.Equal(t, int32(0), val)
 }
 
-// TestParams_GetInt32TooBig
+// TestParams_GetInt32TooBig tests the GetInt32 method
 func TestParams_GetInt32TooBig(t *testing.T) {
 	body := ""
 	r, err := http.NewRequestWithContext(context.Background(), "GET", fmt.Sprintf("/test?test=%d", math.MaxInt32+1), strings.NewReader(body))
@@ -471,7 +471,7 @@ func TestParams_GetInt32TooBig(t *testing.T) {
 	assert.Equal(t, int32(0), val)
 }
 
-// TestParams_GetInt64Ok
+// TestParams_GetInt64Ok tests the GetInt64 method
 func TestParams_GetInt64Ok(t *testing.T) {
 	body := ""
 	r, err := http.NewRequestWithContext(context.Background(), "GET", "/test?test=123", strings.NewReader(body))
@@ -504,7 +504,7 @@ func BenchmarkParams_GetInt64Ok(b *testing.B) {
 	}
 }
 
-// TestParams_GetInt64TooSmall
+// TestParams_GetInt64TooSmall tests the GetInt64 method
 func TestParams_GetInt64TooSmall(t *testing.T) {
 	body := ""
 	r, err := http.NewRequestWithContext(context.Background(), "GET", fmt.Sprintf("/test?test=%d", 0), strings.NewReader(body))
@@ -518,7 +518,7 @@ func TestParams_GetInt64TooSmall(t *testing.T) {
 	assert.Equal(t, int64(0), val)
 }
 
-// TestParams_GetUint64Ok
+// TestParams_GetUint64Ok tests the GetUint64Ok method
 func TestParams_GetUint64Ok(t *testing.T) {
 	body := ""
 	r, err := http.NewRequestWithContext(context.Background(), "GET", "/test?test=123", strings.NewReader(body))
@@ -533,10 +533,10 @@ func TestParams_GetUint64Ok(t *testing.T) {
 	assert.Equal(t, uint64(123), val)
 }
 
-// TestGetParams_Post
+// TestGetParams_Post tests the method with a POST request
 func TestGetParams_Post(t *testing.T) {
 	body := "test=true"
-	r, err := http.NewRequestWithContext(context.Background(), "POST", "test", strings.NewReader(body))
+	r, err := http.NewRequestWithContext(context.Background(), http.MethodPost, "test", strings.NewReader(body))
 	assert.NoError(t, err)
 	r.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
@@ -549,7 +549,7 @@ func TestGetParams_Post(t *testing.T) {
 	assert.Equal(t, true, val)
 }
 
-// TestParams_GetTimeOk
+// TestParams_GetTimeOk tests the GetTimeOk method
 func TestParams_GetTimeOk(t *testing.T) {
 	body := ""
 	r, err := http.NewRequestWithContext(context.Background(), "GET", "/test?test=2020-12-31", strings.NewReader(body))
@@ -564,7 +564,7 @@ func TestParams_GetTimeOk(t *testing.T) {
 	assert.Equal(t, "2020-12-31 00:00:00 +0000 UTC", val.String())
 }
 
-// TestGetParams_Put
+// TestGetParams_Put tests the method with a PUT request
 func TestGetParams_Put(t *testing.T) {
 	body := "test=true"
 	r, err := http.NewRequestWithContext(context.Background(), http.MethodPut, "test", strings.NewReader(body))
@@ -580,7 +580,7 @@ func TestGetParams_Put(t *testing.T) {
 	assert.Equal(t, true, val)
 }
 
-// TestGetParams_ParsePostUrlJSON
+// TestGetParams_ParsePostUrlJSON tests the method with a JSON body
 func TestGetParams_ParsePostUrlJSON(t *testing.T) {
 
 	r, err := http.NewRequestWithContext(context.Background(), "PUT", "test?test=false&id=1", strings.NewReader(testJSONParam))
@@ -600,7 +600,7 @@ func TestGetParams_ParsePostUrlJSON(t *testing.T) {
 	assert.Equal(t, 1.0, val)
 }
 
-// TestGetParams_ParseJSONBodyMux
+// TestGetParams_ParseJSONBodyMux tests the method with mux
 func TestGetParams_ParseJSONBodyMux(t *testing.T) {
 
 	r, err := http.NewRequestWithContext(context.Background(), "POST", "/test/42", strings.NewReader(testJSONParam))
@@ -627,7 +627,7 @@ func TestGetParams_ParseJSONBodyMux(t *testing.T) {
 	m.ServeHTTP(nil, r)
 }
 
-// TestImbue
+// TestImbue tests the Imbue method
 func TestImbue(t *testing.T) {
 	body := "test=true&keys=this,that,something&values=1,2,3"
 	r, err := http.NewRequestWithContext(context.Background(), "PUT", "test", strings.NewReader(body))
@@ -657,7 +657,7 @@ func TestImbue(t *testing.T) {
 	}
 }
 
-// TestImbue_Time
+// TestImbue_Time tests the Imbue method with time.Time
 func TestImbue_Time(t *testing.T) {
 	body := "test=true&created_at=2016-06-07T00:30Z&remind_on=2016-07-17"
 	r, err := http.NewRequestWithContext(context.Background(), "PUT", "test", strings.NewReader(body))
@@ -687,7 +687,7 @@ func TestImbue_Time(t *testing.T) {
 	assert.Equal(t, true, obj.RemindOn.Equal(remindOn))
 }
 
-// TestHasAll
+// TestHasAll tests the HasAll method
 func TestHasAll(t *testing.T) {
 	body := "test=true&keys=this,that,something&values=1,2,3"
 	r, err := http.NewRequestWithContext(context.Background(), "PUT", "test", strings.NewReader(body))
@@ -1573,11 +1573,11 @@ func TestParams_GetIntSliceOk_WithOverflow(t *testing.T) {
 
 	params := &Params{
 		Values: map[string]interface{}{
-			"ints": overflowValue,
+			"integers": overflowValue,
 		},
 	}
 
-	slice, ok := params.GetIntSliceOk("ints")
+	slice, ok := params.GetIntSliceOk("integers")
 
 	assert.False(t, ok, "Expected ok to be false due to overflow")
 	assert.Equal(t, []int{}, slice, "Slice mismatch")
@@ -1727,6 +1727,271 @@ func TestParams_GetFloatSlice(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			slice := tt.params.GetFloatSlice(tt.key)
 			assert.Equal(t, tt.expectedSlice, slice, "Slice mismatch")
+		})
+	}
+}
+
+// TestParams_GetIntOk_Extended tests the GetIntOk method
+func TestParams_GetIntOk_Extended(t *testing.T) {
+	tests := []struct {
+		name          string
+		params        *Params
+		key           string
+		expectedValue int
+		expectedOk    bool
+	}{
+		{
+			name: "Value is int (positive)",
+			params: &Params{
+				Values: map[string]interface{}{
+					"intKey": 123,
+				},
+			},
+			key:           "intKey",
+			expectedValue: 123,
+			expectedOk:    true,
+		},
+		{
+			name: "Value is int (negative)",
+			params: &Params{
+				Values: map[string]interface{}{
+					"intKey": -456,
+				},
+			},
+			key:           "intKey",
+			expectedValue: -456,
+			expectedOk:    true,
+		},
+		{
+			name: "Value is int (zero)",
+			params: &Params{
+				Values: map[string]interface{}{
+					"intKey": 0,
+				},
+			},
+			key:           "intKey",
+			expectedValue: 0,
+			expectedOk:    true,
+		},
+		{
+			name: "Value is int64 (positive)",
+			params: &Params{
+				Values: map[string]interface{}{
+					"int64Key": int64(789),
+				},
+			},
+			key:           "int64Key",
+			expectedValue: 789,
+			expectedOk:    true,
+		},
+		{
+			name: "Value is int64 (negative)",
+			params: &Params{
+				Values: map[string]interface{}{
+					"int64Key": int64(-1011),
+				},
+			},
+			key:           "int64Key",
+			expectedValue: -1011,
+			expectedOk:    true,
+		},
+		{
+			name: "Value is uint (within int range)",
+			params: &Params{
+				Values: map[string]interface{}{
+					"uintKey": uint(2022),
+				},
+			},
+			key:           "uintKey",
+			expectedValue: 2022,
+			expectedOk:    true,
+		},
+		{
+			name: "Value is uint64 (exceeds int range)",
+			params: &Params{
+				Values: map[string]interface{}{
+					"uint64Key": uint64(math.MaxInt) + 1,
+				},
+			},
+			key:           "uint64Key",
+			expectedValue: 0,
+			expectedOk:    false,
+		},
+		{
+			name: "Value is float64 (integer value)",
+			params: &Params{
+				Values: map[string]interface{}{
+					"floatKey": 3033.0,
+				},
+			},
+			key:           "floatKey",
+			expectedValue: 3033,
+			expectedOk:    true,
+		},
+		{
+			name: "Value is float64 (non-integer value)",
+			params: &Params{
+				Values: map[string]interface{}{
+					"floatKey": 4044.5,
+				},
+			},
+			key:           "floatKey",
+			expectedValue: 0,
+			expectedOk:    false,
+		},
+		{
+			name: "Value is string representing integer",
+			params: &Params{
+				Values: map[string]interface{}{
+					"strKey": "5055",
+				},
+			},
+			key:           "strKey",
+			expectedValue: 5055,
+			expectedOk:    true,
+		},
+		{
+			name: "Value is string representing negative integer",
+			params: &Params{
+				Values: map[string]interface{}{
+					"strKey": "-6066",
+				},
+			},
+			key:           "strKey",
+			expectedValue: -6066,
+			expectedOk:    true,
+		},
+		{
+			name: "Value is string representing number exceeding int range",
+			params: &Params{
+				Values: map[string]interface{}{
+					"strKey": func() string {
+						if strconv.IntSize == 32 {
+							return "2147483648" // math.MaxInt32 + 1
+						}
+						return "9223372036854775808" // math.MaxInt64 + 1
+					}(),
+				},
+			},
+			key:           "strKey",
+			expectedValue: 0,
+			expectedOk:    false,
+		},
+		{
+			name: "Value is string representing non-integer number",
+			params: &Params{
+				Values: map[string]interface{}{
+					"strKey": "7077.8",
+				},
+			},
+			key:           "strKey",
+			expectedValue: 0,
+			expectedOk:    false,
+		},
+		{
+			name: "Value is []byte representing integer",
+			params: &Params{
+				Values: map[string]interface{}{
+					"byteKey": []byte("8088"),
+				},
+			},
+			key:           "byteKey",
+			expectedValue: 8088,
+			expectedOk:    true,
+		},
+		{
+			name: "Value is of unexpected type (bool)",
+			params: &Params{
+				Values: map[string]interface{}{
+					"boolKey": true,
+				},
+			},
+			key:           "boolKey",
+			expectedValue: 0,
+			expectedOk:    false,
+		},
+		{
+			name: "Key does not exist",
+			params: &Params{
+				Values: map[string]interface{}{},
+			},
+			key:           "missingKey",
+			expectedValue: 0,
+			expectedOk:    false,
+		},
+		{
+			name: "Value is nil",
+			params: &Params{
+				Values: map[string]interface{}{
+					"nilKey": nil,
+				},
+			},
+			key:           "nilKey",
+			expectedValue: 0,
+			expectedOk:    false,
+		},
+		{
+			name: "Value is math.MaxInt",
+			params: &Params{
+				Values: map[string]interface{}{
+					"maxIntKey": math.MaxInt,
+				},
+			},
+			key:           "maxIntKey",
+			expectedValue: math.MaxInt,
+			expectedOk:    true,
+		},
+		{
+			name: "Value is math.MinInt",
+			params: &Params{
+				Values: map[string]interface{}{
+					"minIntKey": math.MinInt,
+				},
+			},
+			key:           "minIntKey",
+			expectedValue: math.MinInt,
+			expectedOk:    true,
+		},
+		{
+			name: "Value is float64 exceeding int range",
+			params: &Params{
+				Values: map[string]interface{}{
+					"floatKey": float64(math.MaxInt) + 1.0,
+				},
+			},
+			key:           "floatKey",
+			expectedValue: 0,
+			expectedOk:    false,
+		},
+		{
+			name: "Value is negative float64 integer",
+			params: &Params{
+				Values: map[string]interface{}{
+					"floatKey": -9099.0,
+				},
+			},
+			key:           "floatKey",
+			expectedValue: -9099,
+			expectedOk:    true,
+		},
+		{
+			name: "Value is negative float64 non-integer",
+			params: &Params{
+				Values: map[string]interface{}{
+					"floatKey": -10010.5,
+				},
+			},
+			key:           "floatKey",
+			expectedValue: 0,
+			expectedOk:    false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			value, ok := tt.params.GetIntOk(tt.key)
+			assert.Equal(t, tt.expectedOk, ok, "Expected ok to be %v, got %v", tt.expectedOk, ok)
+			assert.Equal(t, tt.expectedValue, value, "Expected value to be %v, got %v", tt.expectedValue, value)
 		})
 	}
 }
