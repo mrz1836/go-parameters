@@ -105,33 +105,47 @@ func (p *Params) GetFloatSliceOk(key string) ([]float64, bool) {
 			return v, true
 		case string:
 			if v == "" {
-				// Return an empty slice and true
 				return []float64{}, true
 			}
 			raw := strings.Split(v, ",")
-			slice := make([]float64, len(raw))
-			for i, k := range raw {
-				if num, err := strconv.ParseFloat(k, 64); err == nil {
-					slice[i] = num
+			slice := make([]float64, 0, len(raw))
+			for _, k := range raw {
+				if num, err := strconv.ParseFloat(strings.TrimSpace(k), 64); err == nil {
+					slice = append(slice, num)
 				} else {
-					return slice, false
+					return []float64{}, false
+				}
+			}
+			return slice, true
+		case []byte:
+			vStr := string(v)
+			if vStr == "" {
+				return []float64{}, true
+			}
+			raw := strings.Split(vStr, ",")
+			slice := make([]float64, 0, len(raw))
+			for _, k := range raw {
+				if num, err := strconv.ParseFloat(strings.TrimSpace(k), 64); err == nil {
+					slice = append(slice, num)
+				} else {
+					return []float64{}, false
 				}
 			}
 			return slice, true
 		case []interface{}:
-			raw := v
-			slice := make([]float64, len(raw))
-			for i, k := range raw {
-				if num, floatOk := k.(float64); floatOk {
-					slice[i] = num
-				} else if numS, stringOk := k.(string); stringOk {
-					if parsed, err := strconv.ParseFloat(numS, 64); err == nil {
-						slice[i] = parsed
+			slice := make([]float64, 0, len(v))
+			for _, k := range v {
+				switch innerVal := k.(type) {
+				case float64:
+					slice = append(slice, innerVal)
+				case string:
+					if num, err := strconv.ParseFloat(innerVal, 64); err == nil {
+						slice = append(slice, num)
 					} else {
-						return slice, false
+						return []float64{}, false
 					}
-				} else {
-					return slice, false
+				default:
+					return []float64{}, false
 				}
 			}
 			return slice, true

@@ -938,7 +938,7 @@ func TestParams_GetFloatSliceOk(t *testing.T) {
 				},
 			},
 			key:            "floats",
-			expectedSlice:  []float64{10.1, 0, 0},
+			expectedSlice:  []float64{},
 			expectedResult: false,
 		},
 		{
@@ -1603,4 +1603,130 @@ func TestParams_GetIntOk_WithOverflow(t *testing.T) {
 
 	assert.False(t, ok, "Expected ok to be false due to overflow")
 	assert.Equal(t, expectedValue, value, "Value mismatch")
+}
+
+// TestParams_GetFloatSlice tests the GetFloatSlice method
+func TestParams_GetFloatSlice(t *testing.T) {
+	tests := []struct {
+		name          string
+		params        *Params
+		key           string
+		expectedSlice []float64
+	}{
+		{
+			name: "Value is []float64",
+			params: &Params{
+				Values: map[string]interface{}{
+					"floats": []float64{1.1, 2.2, 3.3},
+				},
+			},
+			key:           "floats",
+			expectedSlice: []float64{1.1, 2.2, 3.3},
+		},
+		{
+			name: "Value is comma-separated string",
+			params: &Params{
+				Values: map[string]interface{}{
+					"floats": "4.4,5.5,6.6",
+				},
+			},
+			key:           "floats",
+			expectedSlice: []float64{4.4, 5.5, 6.6},
+		},
+		{
+			name: "Value is []byte of comma-separated numbers",
+			params: &Params{
+				Values: map[string]interface{}{
+					"floats": []byte("7.7,8.8,9.9"),
+				},
+			},
+			key:           "floats",
+			expectedSlice: []float64{7.7, 8.8, 9.9},
+		},
+		{
+			name: "Value is []interface{} with float64s",
+			params: &Params{
+				Values: map[string]interface{}{
+					"floats": []interface{}{10.1, 11.2, 12.3},
+				},
+			},
+			key:           "floats",
+			expectedSlice: []float64{10.1, 11.2, 12.3},
+		},
+		{
+			name: "Value is []interface{} with numeric strings",
+			params: &Params{
+				Values: map[string]interface{}{
+					"floats": []interface{}{"13.4", "14.5", "15.6"},
+				},
+			},
+			key:           "floats",
+			expectedSlice: []float64{13.4, 14.5, 15.6},
+		},
+		{
+			name: "Value is nil",
+			params: &Params{
+				Values: map[string]interface{}{
+					"floats": nil,
+				},
+			},
+			key:           "floats",
+			expectedSlice: []float64{},
+		},
+		{
+			name: "Value is empty string",
+			params: &Params{
+				Values: map[string]interface{}{
+					"floats": "",
+				},
+			},
+			key:           "floats",
+			expectedSlice: []float64{},
+		},
+		{
+			name: "Value is of unexpected type (bool)",
+			params: &Params{
+				Values: map[string]interface{}{
+					"floats": true,
+				},
+			},
+			key:           "floats",
+			expectedSlice: []float64{},
+		},
+		{
+			name: "Key does not exist",
+			params: &Params{
+				Values: map[string]interface{}{},
+			},
+			key:           "missing_key",
+			expectedSlice: []float64{},
+		},
+		{
+			name: "Value contains invalid data in string",
+			params: &Params{
+				Values: map[string]interface{}{
+					"floats": "16.7,invalid,18.9",
+				},
+			},
+			key:           "floats",
+			expectedSlice: []float64{},
+		},
+		{
+			name: "Value contains invalid data in []interface{}",
+			params: &Params{
+				Values: map[string]interface{}{
+					"floats": []interface{}{19.0, "invalid", 20.1},
+				},
+			},
+			key:           "floats",
+			expectedSlice: []float64{},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			slice := tt.params.GetFloatSlice(tt.key)
+			assert.Equal(t, tt.expectedSlice, slice, "Slice mismatch")
+		})
+	}
 }
