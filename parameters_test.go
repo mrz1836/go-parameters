@@ -741,3 +741,26 @@ func TestCustomTypeSetter(t *testing.T) {
 		t.Fatalf("expected %+v, Got %+v", expected, testObj)
 	}
 }
+
+// TestMakeParsedReq will test the MakeParsedReq function
+func TestMakeParsedReq(t *testing.T) {
+	r, err := http.NewRequestWithContext(context.Background(), "GET", "test?test=true", strings.NewReader(""))
+	assert.NoError(t, err)
+	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
+	params := GetParams(r)
+
+	fn := func(w http.ResponseWriter, r *http.Request) {
+		r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, params))
+		p := GetParams(r)
+		val, present := p.Get("test")
+		assert.Equal(t, true, present)
+		assert.Equal(t, true, val)
+	}
+
+	req := MakeParsedReq(fn)
+	assert.NotNil(t, req)
+
+	assert.NotPanics(t, func() {
+		req(nil, r)
+	})
+}
