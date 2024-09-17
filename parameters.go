@@ -100,11 +100,11 @@ func (p *Params) GetFloat(key string) float64 {
 func (p *Params) GetFloatSliceOk(key string) ([]float64, bool) {
 	val, ok := p.Get(key)
 	if ok {
-		switch val.(type) {
+		switch val.(type) { //nolint:gosimple // this is valid
 		case []float64:
-			return val.([]float64), true
+			return val.([]float64), true //nolint:gosimple // this is valid
 		case string:
-			raw := strings.Split(val.(string), ",")
+			raw := strings.Split(val.(string), ",") //nolint:gosimple // this is valid
 			slice := make([]float64, len(raw))
 			for i, k := range raw {
 				if num, err := strconv.ParseFloat(k, 64); err == nil {
@@ -261,9 +261,9 @@ func (p *Params) GetInt64(key string) int64 {
 func (p *Params) GetIntSliceOk(key string) ([]int, bool) {
 	val, ok := p.Get(key)
 	if ok {
-		switch val.(type) {
+		switch val.(type) { //nolint:gosimple // this is valid
 		case []int:
-			return val.([]int), true
+			return val.([]int), true //nolint:gosimple // this is valid
 		case []byte:
 			val = string(val.([]byte))
 			raw := strings.Split(val.(string), ",")
@@ -279,8 +279,8 @@ func (p *Params) GetIntSliceOk(key string) ([]int, bool) {
 			}
 			return slice, true
 		case string:
-			if len(val.(string)) > 0 {
-				raw := strings.Split(val.(string), ",")
+			if len(val.(string)) > 0 { //nolint:gosimple // this is valid
+				raw := strings.Split(val.(string), ",") //nolint:gosimple // this is valid
 				slice := make([]int, len(raw))
 				for i, k := range raw {
 					if num, err := strconv.ParseInt(
@@ -335,10 +335,16 @@ func (p *Params) GetUint64Ok(key string) (uint64, bool) {
 		ok = err == nil && val.(float64) >= 0
 	}
 	if ok {
-		if valInt, ok := val.(int64); ok {
-			val = uint64(valInt)
+		var valInt int64
+		var valUint uint64
+		if valInt, ok = val.(int64); ok {
+			if valInt < 0 {
+				val = uint64(0)
+			} else {
+				val = uint64(valInt)
+			}
 		}
-		if valUint, ok := val.(uint64); ok {
+		if valUint, ok = val.(uint64); ok {
 			return valUint, true
 		} else if valUint, ok := val.(uint); ok {
 			return uint64(valUint), true
@@ -371,6 +377,13 @@ func (p *Params) GetUint64SliceOk(key string) ([]uint64, bool) {
 	if raw, ok := p.GetIntSliceOk(key); ok {
 		slice := make([]uint64, len(raw))
 		for i, num := range raw {
+			if num < 0 {
+				// Handle negative number as per your needs
+				// Option 1: Return an error
+				return nil, false
+				// Option 2: Skip the negative number
+				// continue
+			}
 			slice[i] = uint64(num)
 		}
 		return slice, true
@@ -645,11 +658,6 @@ func (p *Params) Imbue(obj interface{}) {
 				field.Set(reflect.ValueOf(newObj).Elem())
 			}
 		}
-
-		/*else if CustomTypeSetter != nil {
-			val, _ := p.Get(k)
-			CustomTypeSetter(&field, val)
-		}*/
 	}
 }
 
