@@ -131,6 +131,8 @@ The following benchmarks were conducted to measure the performance of various fu
 - **Architecture:** ARM64
 - **CPU:** Apple M1 Max
 
+<br/>
+
 ### Benchmark Results
 View the latest [benchmark results](benchmarks/benchmarks-latest.md)
 
@@ -148,6 +150,8 @@ View the latest [benchmark results](benchmarks/benchmarks-latest.md)
 | **Params_GetInt64Ok**       |  28,752,844 | 41.77 ns | 16 B |         1 |
 | **Params_GetIntSliceOk**    |  38,099,671 | 31.59 ns | 16 B |         1 |
 | **Params_GetUint64Ok**      |  29,921,580 | 39.68 ns | 16 B |         1 |
+
+<br/>
 
 ### Benchmark Details
 
@@ -170,6 +174,8 @@ View the latest [benchmark results](benchmarks/benchmarks-latest.md)
 - **ns/op**: Nanoseconds per operation, indicating the average time taken for each operation.
 - **B/op**: Bytes allocated per operation, showing the memory usage.
 - **allocs/op**: Allocations per operation, indicating how many memory allocations occurred per operation.
+
+<br/>
 
 ### How to Run Benchmarks
 Run the Go benchmarks:
