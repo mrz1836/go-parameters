@@ -1995,3 +1995,941 @@ func TestParams_GetIntOk_Extended(t *testing.T) {
 		})
 	}
 }
+
+// TestParams_GetStringSliceOk tests the GetStringSliceOk method
+func TestParams_GetStringSliceOk(t *testing.T) {
+	tests := []struct {
+		name          string
+		params        *Params
+		key           string
+		expectedSlice []string
+		expectedOk    bool
+	}{
+		{
+			name: "Value is []string",
+			params: &Params{
+				Values: map[string]interface{}{
+					"key": []string{"a", "b", "c"},
+				},
+			},
+			key:           "key",
+			expectedSlice: []string{"a", "b", "c"},
+			expectedOk:    true,
+		},
+		{
+			name: "Value is string (comma-separated)",
+			params: &Params{
+				Values: map[string]interface{}{
+					"key": "a,b,c",
+				},
+			},
+			key:           "key",
+			expectedSlice: []string{"a", "b", "c"},
+			expectedOk:    true,
+		},
+		{
+			name: "Value is []byte (comma-separated)",
+			params: &Params{
+				Values: map[string]interface{}{
+					"key": []byte("a,b,c"),
+				},
+			},
+			key:           "key",
+			expectedSlice: []string{"a", "b", "c"},
+			expectedOk:    true,
+		},
+		{
+			name: "Value is []interface{} of strings",
+			params: &Params{
+				Values: map[string]interface{}{
+					"key": []interface{}{"a", "b", "c"},
+				},
+			},
+			key:           "key",
+			expectedSlice: []string{"a", "b", "c"},
+			expectedOk:    true,
+		},
+		{
+			name: "Value is []interface{} with non-string elements",
+			params: &Params{
+				Values: map[string]interface{}{
+					"key": []interface{}{"a", 2, "c"},
+				},
+			},
+			key:           "key",
+			expectedSlice: []string{},
+			expectedOk:    false,
+		},
+		{
+			name: "Value is nil",
+			params: &Params{
+				Values: map[string]interface{}{
+					"key": nil,
+				},
+			},
+			key:           "key",
+			expectedSlice: []string{},
+			expectedOk:    false,
+		},
+		{
+			name: "Key does not exist",
+			params: &Params{
+				Values: map[string]interface{}{},
+			},
+			key:           "missing_key",
+			expectedSlice: []string{},
+			expectedOk:    false,
+		},
+		{
+			name: "Value is of unexpected type (int)",
+			params: &Params{
+				Values: map[string]interface{}{
+					"key": 123,
+				},
+			},
+			key:           "key",
+			expectedSlice: []string{},
+			expectedOk:    false,
+		},
+		{
+			name: "Value is empty string",
+			params: &Params{
+				Values: map[string]interface{}{
+					"key": "",
+				},
+			},
+			key:           "key",
+			expectedSlice: []string{""},
+			expectedOk:    true,
+		},
+		{
+			name: "Value is empty []string",
+			params: &Params{
+				Values: map[string]interface{}{
+					"key": []string{},
+				},
+			},
+			key:           "key",
+			expectedSlice: []string{},
+			expectedOk:    true,
+		},
+		{
+			name: "Value is empty []byte",
+			params: &Params{
+				Values: map[string]interface{}{
+					"key": []byte(""),
+				},
+			},
+			key:           "key",
+			expectedSlice: []string{""},
+			expectedOk:    true,
+		},
+		{
+			name: "Value is string without commas",
+			params: &Params{
+				Values: map[string]interface{}{
+					"key": "abc",
+				},
+			},
+			key:           "key",
+			expectedSlice: []string{"abc"},
+			expectedOk:    true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			slice, ok := tt.params.GetStringSliceOk(tt.key)
+			assert.Equal(t, tt.expectedOk, ok, "Expected ok to be %v, got %v", tt.expectedOk, ok)
+			assert.Equal(t, tt.expectedSlice, slice, "Expected slice to be %v, got %v", tt.expectedSlice, slice)
+		})
+	}
+}
+
+// TestParams_GetTimeInLocationOk tests the GetTimeInLocationOk method
+func TestParams_GetTimeInLocationOk(t *testing.T) {
+	loc := time.UTC // You can specify any location you need
+
+	tests := []struct {
+		name         string
+		params       *Params
+		key          string
+		expectedTime time.Time
+		expectedOk   bool
+	}{
+		{
+			name: "Key does not exist",
+			params: &Params{
+				Values: map[string]interface{}{},
+			},
+			key:          "missing_key",
+			expectedTime: time.Time{},
+			expectedOk:   false,
+		},
+		{
+			name: "Value is time.Time",
+			params: &Params{
+				Values: map[string]interface{}{
+					"timeKey": time.Date(2023, 10, 15, 12, 30, 45, 0, loc),
+				},
+			},
+			key:          "timeKey",
+			expectedTime: time.Date(2023, 10, 15, 12, 30, 45, 0, loc),
+			expectedOk:   true,
+		},
+		{
+			name: "Value is string in RFC3339 format",
+			params: &Params{
+				Values: map[string]interface{}{
+					"timeKey": "2023-10-15T12:30:45Z",
+				},
+			},
+			key:          "timeKey",
+			expectedTime: time.Date(2023, 10, 15, 12, 30, 45, 0, loc),
+			expectedOk:   true,
+		},
+		{
+			name: "Value is string in DateOnly format",
+			params: &Params{
+				Values: map[string]interface{}{
+					"timeKey": "2023-10-15",
+				},
+			},
+			key:          "timeKey",
+			expectedTime: time.Date(2023, 10, 15, 0, 0, 0, 0, loc),
+			expectedOk:   true,
+		},
+		{
+			name: "Value is string in DateTime format",
+			params: &Params{
+				Values: map[string]interface{}{
+					"timeKey": "2023-10-15 12:30:45",
+				},
+			},
+			key:          "timeKey",
+			expectedTime: time.Date(2023, 10, 15, 12, 30, 45, 0, loc),
+			expectedOk:   true,
+		},
+		{
+			name: "Value is string in HTMLDateTimeLocal format",
+			params: &Params{
+				Values: map[string]interface{}{
+					"timeKey": "2023-10-15T12:30",
+				},
+			},
+			key:          "timeKey",
+			expectedTime: time.Date(2023, 10, 15, 12, 30, 0, 0, loc),
+			expectedOk:   true,
+		},
+		{
+			name: "Value is string in invalid format",
+			params: &Params{
+				Values: map[string]interface{}{
+					"timeKey": "invalid time format",
+				},
+			},
+			key:          "timeKey",
+			expectedTime: time.Time{},
+			expectedOk:   false, // According to the function's behavior
+		},
+		{
+			name: "Value is of unexpected type (int)",
+			params: &Params{
+				Values: map[string]interface{}{
+					"timeKey": 1234567890,
+				},
+			},
+			key:          "timeKey",
+			expectedTime: time.Time{},
+			expectedOk:   false, // According to the function's behavior
+		},
+		{
+			name: "Value is nil",
+			params: &Params{
+				Values: map[string]interface{}{
+					"timeKey": nil,
+				},
+			},
+			key:          "timeKey",
+			expectedTime: time.Time{},
+			expectedOk:   false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			timeValue, ok := tt.params.GetTimeInLocationOk(tt.key, loc)
+			assert.Equal(t, tt.expectedOk, ok, "Expected ok to be %v, got %v", tt.expectedOk, ok)
+			assert.Equal(t, tt.expectedTime, timeValue, "Expected time to be %v, got %v", tt.expectedTime, timeValue)
+		})
+	}
+}
+
+// TestParams_GetTimeInLocation tests the GetTimeInLocation method
+func TestParams_GetTimeInLocation(t *testing.T) {
+
+	loc := time.UTC // You can specify any location you need
+
+	tests := []struct {
+		name         string
+		params       *Params
+		key          string
+		expectedTime time.Time
+	}{
+		{
+			name: "Key does not exist",
+			params: &Params{
+				Values: map[string]interface{}{},
+			},
+			key:          "missing_key",
+			expectedTime: time.Time{},
+		},
+		{
+			name: "Value is time.Time",
+			params: &Params{
+				Values: map[string]interface{}{
+					"timeKey": time.Date(2023, 10, 15, 12, 30, 45, 0, loc),
+				},
+			},
+			key:          "timeKey",
+			expectedTime: time.Date(2023, 10, 15, 12, 30, 45, 0, loc),
+		},
+		{
+			name: "Value is string in RFC3339 format",
+			params: &Params{
+				Values: map[string]interface{}{
+					"timeKey": "2023-10-15T12:30:45Z",
+				},
+			},
+			key:          "timeKey",
+			expectedTime: time.Date(2023, 10, 15, 12, 30, 45, 0, time.UTC),
+		},
+		{
+			name: "Value is string in DateOnly format",
+			params: &Params{
+				Values: map[string]interface{}{
+					"timeKey": "2023-10-15",
+				},
+			},
+			key:          "timeKey",
+			expectedTime: time.Date(2023, 10, 15, 0, 0, 0, 0, loc),
+		},
+		{
+			name: "Value is string in DateTime format",
+			params: &Params{
+				Values: map[string]interface{}{
+					"timeKey": "2023-10-15 12:30:45",
+				},
+			},
+			key:          "timeKey",
+			expectedTime: time.Date(2023, 10, 15, 12, 30, 45, 0, loc),
+		},
+		{
+			name: "Value is string in HTMLDateTimeLocal format",
+			params: &Params{
+				Values: map[string]interface{}{
+					"timeKey": "2023-10-15T12:30",
+				},
+			},
+			key:          "timeKey",
+			expectedTime: time.Date(2023, 10, 15, 12, 30, 0, 0, loc),
+		},
+		{
+			name: "Value is string in invalid format",
+			params: &Params{
+				Values: map[string]interface{}{
+					"timeKey": "invalid time format",
+				},
+			},
+			key:          "timeKey",
+			expectedTime: time.Time{},
+		},
+		{
+			name: "Value is of unexpected type (int)",
+			params: &Params{
+				Values: map[string]interface{}{
+					"timeKey": 1234567890,
+				},
+			},
+			key:          "timeKey",
+			expectedTime: time.Time{},
+		},
+		{
+			name: "Value is nil",
+			params: &Params{
+				Values: map[string]interface{}{
+					"timeKey": nil,
+				},
+			},
+			key:          "timeKey",
+			expectedTime: time.Time{},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			timeValue := tt.params.GetTimeInLocation(tt.key, loc)
+			assert.Equal(t, tt.expectedTime, timeValue, "Expected time to be %v, got %v", tt.expectedTime, timeValue)
+		})
+	}
+}
+
+// TestParams_GetJSONOk tests the GetJSONOk method
+func TestParams_GetJSONOk(t *testing.T) {
+	tests := []struct {
+		name         string
+		params       *Params
+		key          string
+		expectedData map[string]interface{}
+		expectedOk   bool
+	}{
+		{
+			name: "Value is map[string]interface{}",
+			params: &Params{
+				Values: map[string]interface{}{
+					"jsonKey": map[string]interface{}{
+						"name": "John",
+						"age":  30, // Stored as int
+					},
+				},
+			},
+			key: "jsonKey",
+			expectedData: map[string]interface{}{
+				"name": "John",
+				"age":  30, // Expected as int
+			},
+			expectedOk: true,
+		},
+		{
+			name: "Value is valid JSON string",
+			params: &Params{
+				Values: map[string]interface{}{
+					"jsonKey": `{"name":"Jane","age":25}`,
+				},
+			},
+			key: "jsonKey",
+			expectedData: map[string]interface{}{
+				"name": "Jane",
+				"age":  float64(25),
+			},
+			expectedOk: true,
+		},
+		{
+			name: "Value is invalid JSON string",
+			params: &Params{
+				Values: map[string]interface{}{
+					"jsonKey": `{"name":"Invalid JSON", "age":}`,
+				},
+			},
+			key:          "jsonKey",
+			expectedData: nil,
+			expectedOk:   false,
+		},
+		{
+			name: "Value cannot be converted to string",
+			params: &Params{
+				Values: map[string]interface{}{
+					"jsonKey": []string{"not", "a", "string"},
+				},
+			},
+			key:          "jsonKey",
+			expectedData: nil,
+			expectedOk:   false,
+		},
+		{
+			name: "Key does not exist",
+			params: &Params{
+				Values: map[string]interface{}{},
+			},
+			key:          "missingKey",
+			expectedData: nil,
+			expectedOk:   false,
+		},
+		{
+			name: "Value is nil",
+			params: &Params{
+				Values: map[string]interface{}{
+					"jsonKey": nil,
+				},
+			},
+			key:          "jsonKey",
+			expectedData: nil,
+			expectedOk:   false,
+		},
+		{
+			name: "Value is of unexpected type (int)",
+			params: &Params{
+				Values: map[string]interface{}{
+					"jsonKey": 123,
+				},
+			},
+			key:          "jsonKey",
+			expectedData: nil,
+			expectedOk:   false,
+		},
+		{
+			name: "Value is empty string",
+			params: &Params{
+				Values: map[string]interface{}{
+					"jsonKey": "",
+				},
+			},
+			key:          "jsonKey",
+			expectedData: nil,
+			expectedOk:   false,
+		},
+		{
+			name: "Value is JSON string representing array",
+			params: &Params{
+				Values: map[string]interface{}{
+					"jsonKey": `["apple", "banana", "cherry"]`,
+				},
+			},
+			key:          "jsonKey",
+			expectedData: nil, // Function expects object, not array
+			expectedOk:   false,
+		},
+		{
+			name: "Value is valid JSON string with nested objects",
+			params: &Params{
+				Values: map[string]interface{}{
+					"jsonKey": `{"person": {"name": "Alice", "age": 28}, "city": "Wonderland"}`,
+				},
+			},
+			key: "jsonKey",
+			expectedData: map[string]interface{}{
+				"person": map[string]interface{}{
+					"name": "Alice",
+					"age":  float64(28),
+				},
+				"city": "Wonderland",
+			},
+			expectedOk: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			data, ok := tt.params.GetJSONOk(tt.key)
+			assert.Equal(t, tt.expectedOk, ok, "Expected ok to be %v, got %v", tt.expectedOk, ok)
+			assert.Equal(t, tt.expectedData, data, "Expected data to be %v, got %v", tt.expectedData, data)
+		})
+	}
+}
+
+// TestParams_GetJSON tests the GetJSON method
+func TestParams_GetJSON(t *testing.T) {
+	tests := []struct {
+		name         string
+		params       *Params
+		key          string
+		expectedData map[string]interface{}
+	}{
+		{
+			name: "Value is map[string]interface{}",
+			params: &Params{
+				Values: map[string]interface{}{
+					"jsonKey": map[string]interface{}{
+						"name": "John",
+						"age":  30, // Stored as int
+					},
+				},
+			},
+			key: "jsonKey",
+			expectedData: map[string]interface{}{
+				"name": "John",
+				"age":  30, // Expected as int
+			},
+		},
+		{
+			name: "Value is valid JSON string",
+			params: &Params{
+				Values: map[string]interface{}{
+					"jsonKey": `{"name":"Jane","age":25}`,
+				},
+			},
+			key: "jsonKey",
+			expectedData: map[string]interface{}{
+				"name": "Jane",
+				"age":  float64(25), // Decoded from JSON string
+			},
+		},
+		{
+			name: "Value is invalid JSON string",
+			params: &Params{
+				Values: map[string]interface{}{
+					"jsonKey": `{"name":"Invalid JSON", "age":}`,
+				},
+			},
+			key:          "jsonKey",
+			expectedData: nil, // Parsing fails, GetJSON returns nil
+		},
+		{
+			name: "Value cannot be converted to string",
+			params: &Params{
+				Values: map[string]interface{}{
+					"jsonKey": []string{"not", "a", "string"},
+				},
+			},
+			key:          "jsonKey",
+			expectedData: nil, // GetStringOk fails, GetJSON returns nil
+		},
+		{
+			name: "Key does not exist",
+			params: &Params{
+				Values: map[string]interface{}{},
+			},
+			key:          "missingKey",
+			expectedData: nil,
+		},
+		{
+			name: "Value is nil",
+			params: &Params{
+				Values: map[string]interface{}{
+					"jsonKey": nil,
+				},
+			},
+			key:          "jsonKey",
+			expectedData: nil,
+		},
+		{
+			name: "Value is of unexpected type (int)",
+			params: &Params{
+				Values: map[string]interface{}{
+					"jsonKey": 123,
+				},
+			},
+			key:          "jsonKey",
+			expectedData: nil,
+		},
+		{
+			name: "Value is empty string",
+			params: &Params{
+				Values: map[string]interface{}{
+					"jsonKey": "",
+				},
+			},
+			key:          "jsonKey",
+			expectedData: nil, // Empty string cannot be parsed as JSON
+		},
+		{
+			name: "Value is JSON string representing array",
+			params: &Params{
+				Values: map[string]interface{}{
+					"jsonKey": `["apple", "banana", "cherry"]`,
+				},
+			},
+			key:          "jsonKey",
+			expectedData: nil, // Expected map[string]interface{}, but JSON is an array
+		},
+		{
+			name: "Value is valid JSON string with nested objects",
+			params: &Params{
+				Values: map[string]interface{}{
+					"jsonKey": `{"person": {"name": "Alice", "age": 28}, "city": "Wonderland"}`,
+				},
+			},
+			key: "jsonKey",
+			expectedData: map[string]interface{}{
+				"person": map[string]interface{}{
+					"name": "Alice",
+					"age":  float64(28), // JSON numbers are float64
+				},
+				"city": "Wonderland",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			data := tt.params.GetJSON(tt.key)
+			assert.Equal(t, tt.expectedData, data, "Expected data to be %v, got %v", tt.expectedData, data)
+		})
+	}
+}
+
+// TestParams_GetUint64SliceOk tests the GetUint64SliceOk method
+func TestParams_GetUint64SliceOk(t *testing.T) {
+	tests := []struct {
+		name         string
+		params       *Params
+		key          string
+		expectedData []uint64
+		expectedOk   bool
+	}{
+		{
+			name: "Valid positive integers",
+			params: &Params{
+				Values: map[string]interface{}{
+					"key": []int{1, 2, 3},
+				},
+			},
+			key:          "key",
+			expectedData: []uint64{1, 2, 3},
+			expectedOk:   true,
+		},
+		{
+			name: "Contains negative integers",
+			params: &Params{
+				Values: map[string]interface{}{
+					"key": []int{1, -2, 3},
+				},
+			},
+			key:          "key",
+			expectedData: []uint64{}, // Expected empty slice on failure
+			expectedOk:   false,
+		},
+		{
+			name: "Empty slice",
+			params: &Params{
+				Values: map[string]interface{}{
+					"key": []int{},
+				},
+			},
+			key:          "key",
+			expectedData: []uint64{},
+			expectedOk:   true,
+		},
+		{
+			name: "Key does not exist",
+			params: &Params{
+				Values: map[string]interface{}{},
+			},
+			key:          "missing_key",
+			expectedData: []uint64{},
+			expectedOk:   false,
+		},
+		{
+			name: "Zero values",
+			params: &Params{
+				Values: map[string]interface{}{
+					"key": []int{0, 1, 2},
+				},
+			},
+			key:          "key",
+			expectedData: []uint64{0, 1, 2},
+			expectedOk:   true,
+		},
+		{
+			name: "All negative integers",
+			params: &Params{
+				Values: map[string]interface{}{
+					"key": []int{-1, -2, -3},
+				},
+			},
+			key:          "key",
+			expectedData: []uint64{}, // Expected empty slice on failure
+			expectedOk:   false,
+		},
+		{
+			name: "Large integers within uint64 range",
+			params: &Params{
+				Values: map[string]interface{}{
+					"key": []int{2147483647}, // Max int32
+				},
+			},
+			key:          "key",
+			expectedData: []uint64{2147483647},
+			expectedOk:   true,
+		},
+		{
+			name: "Value is string of comma-separated numbers",
+			params: &Params{
+				Values: map[string]interface{}{
+					"key": "4,5,6",
+				},
+			},
+			key:          "key",
+			expectedData: []uint64{4, 5, 6},
+			expectedOk:   true,
+		},
+		{
+			name: "Value is string with negative numbers",
+			params: &Params{
+				Values: map[string]interface{}{
+					"key": "7,-8,9",
+				},
+			},
+			key:          "key",
+			expectedData: []uint64{}, // Expected empty slice on failure
+			expectedOk:   false,
+		},
+		{
+			name: "Value is []interface{} with integers",
+			params: &Params{
+				Values: map[string]interface{}{
+					"key": []interface{}{10, 11, 12},
+				},
+			},
+			key:          "key",
+			expectedData: []uint64{10, 11, 12},
+			expectedOk:   true,
+		},
+		{
+			name: "Value is []interface{} with strings",
+			params: &Params{
+				Values: map[string]interface{}{
+					"key": []interface{}{"13", "14", "15"},
+				},
+			},
+			key:          "key",
+			expectedData: []uint64{13, 14, 15},
+			expectedOk:   true,
+		},
+		{
+			name: "Value is []interface{} with negative numbers",
+			params: &Params{
+				Values: map[string]interface{}{
+					"key": []interface{}{16, -17, 18},
+				},
+			},
+			key:          "key",
+			expectedData: []uint64{}, // Expected empty slice on failure
+			expectedOk:   false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			data, ok := tt.params.GetUint64SliceOk(tt.key)
+			assert.Equal(t, tt.expectedOk, ok, "Expected ok to be %v, got %v", tt.expectedOk, ok)
+			assert.Equal(t, tt.expectedData, data, "Expected data to be %v, got %v", tt.expectedData, data)
+		})
+	}
+}
+
+// TestParams_GetUint64Slice tests the GetUint64Slice method
+func TestParams_GetUint64Slice(t *testing.T) {
+	tests := []struct {
+		name         string
+		params       *Params
+		key          string
+		expectedData []uint64
+	}{
+		{
+			name: "Valid positive integers",
+			params: &Params{
+				Values: map[string]interface{}{
+					"key": []int{1, 2, 3},
+				},
+			},
+			key:          "key",
+			expectedData: []uint64{1, 2, 3},
+		},
+		{
+			name: "Contains negative integers",
+			params: &Params{
+				Values: map[string]interface{}{
+					"key": []int{1, -2, 3},
+				},
+			},
+			key:          "key",
+			expectedData: []uint64{}, // Expected empty slice on failure
+		},
+		{
+			name: "Empty slice",
+			params: &Params{
+				Values: map[string]interface{}{
+					"key": []int{},
+				},
+			},
+			key:          "key",
+			expectedData: []uint64{},
+		},
+		{
+			name: "Key does not exist",
+			params: &Params{
+				Values: map[string]interface{}{},
+			},
+			key:          "missing_key",
+			expectedData: []uint64{},
+		},
+		{
+			name: "Zero values",
+			params: &Params{
+				Values: map[string]interface{}{
+					"key": []int{0, 1, 2},
+				},
+			},
+			key:          "key",
+			expectedData: []uint64{0, 1, 2},
+		},
+		{
+			name: "All negative integers",
+			params: &Params{
+				Values: map[string]interface{}{
+					"key": []int{-1, -2, -3},
+				},
+			},
+			key:          "key",
+			expectedData: []uint64{}, // Expected empty slice on failure
+		},
+		{
+			name: "Large integers within uint64 range",
+			params: &Params{
+				Values: map[string]interface{}{
+					"key": []int{2147483647}, // Max int32
+				},
+			},
+			key:          "key",
+			expectedData: []uint64{2147483647},
+		},
+		{
+			name: "Value is string of comma-separated numbers",
+			params: &Params{
+				Values: map[string]interface{}{
+					"key": "4,5,6",
+				},
+			},
+			key:          "key",
+			expectedData: []uint64{4, 5, 6},
+		},
+		{
+			name: "Value is string with negative numbers",
+			params: &Params{
+				Values: map[string]interface{}{
+					"key": "7,-8,9",
+				},
+			},
+			key:          "key",
+			expectedData: []uint64{}, // Expected empty slice on failure
+		},
+		{
+			name: "Value is []interface{} with integers",
+			params: &Params{
+				Values: map[string]interface{}{
+					"key": []interface{}{10, 11, 12},
+				},
+			},
+			key:          "key",
+			expectedData: []uint64{10, 11, 12},
+		},
+		{
+			name: "Value is []interface{} with strings",
+			params: &Params{
+				Values: map[string]interface{}{
+					"key": []interface{}{"13", "14", "15"},
+				},
+			},
+			key:          "key",
+			expectedData: []uint64{13, 14, 15},
+		},
+		{
+			name: "Value is []interface{} with negative numbers",
+			params: &Params{
+				Values: map[string]interface{}{
+					"key": []interface{}{16, -17, 18},
+				},
+			},
+			key:          "key",
+			expectedData: []uint64{}, // Expected empty slice on failure
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			data := tt.params.GetUint64Slice(tt.key)
+			assert.Equal(t, tt.expectedData, data, "Expected data to be %v, got %v", tt.expectedData, data)
+		})
+	}
+}

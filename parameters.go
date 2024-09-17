@@ -483,11 +483,8 @@ func (p *Params) GetUint64SliceOk(key string) ([]uint64, bool) {
 		slice := make([]uint64, len(raw))
 		for i, num := range raw {
 			if num < 0 {
-				// Handle negative number as per your needs
-				// Option 1: Return an error
-				return nil, false
-				// Option 2: Skip the negative number
-				// continue
+				// Return empty slice instead of nil
+				return []uint64{}, false
 			}
 			slice[i] = uint64(num)
 		}
@@ -534,11 +531,17 @@ func (p *Params) GetStringSliceOk(key string) ([]string, bool) {
 		case string:
 			return strings.Split(v, ","), true
 		case []interface{}:
-			slice := make([]string, len(v))
-			for i, k := range v {
-				slice[i] = k.(string)
+			slice := make([]string, 0, len(v))
+			for _, k := range v {
+				if str, okS := k.(string); okS {
+					slice = append(slice, str)
+				} else {
+					return []string{}, false
+				}
 			}
 			return slice, true
+		default:
+			return []string{}, false
 		}
 	}
 	return []string{}, false
@@ -608,8 +611,7 @@ func (p *Params) GetTimeInLocationOk(key string, loc *time.Location) (time.Time,
 			return t, true
 		}
 	}
-
-	return time.Time{}, true
+	return time.Time{}, false // Changed from true to false
 }
 
 // GetTimeInLocation get param by key, return time
