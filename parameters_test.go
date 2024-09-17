@@ -1582,3 +1582,25 @@ func TestParams_GetIntSliceOk_WithOverflow(t *testing.T) {
 	assert.False(t, ok, "Expected ok to be false due to overflow")
 	assert.Equal(t, []int{}, slice, "Slice mismatch")
 }
+
+// TestParams_GetIntOk_WithOverflow tests the GetIntOk method with overflow
+func TestParams_GetIntOk_WithOverflow(t *testing.T) {
+	var overflowValue string
+	if strconv.IntSize == 32 {
+		overflowValue = "2147483648" // math.MaxInt32 + 1
+	} else {
+		overflowValue = "9223372036854775808" // math.MaxInt64 + 1
+	}
+
+	params := &Params{
+		Values: map[string]interface{}{
+			"intKey": overflowValue,
+		},
+	}
+
+	expectedValue := 0
+	value, ok := params.GetIntOk("intKey")
+
+	assert.False(t, ok, "Expected ok to be false due to overflow")
+	assert.Equal(t, expectedValue, value, "Value mismatch")
+}

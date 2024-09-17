@@ -182,7 +182,11 @@ func (p *Params) GetIntOk(key string) (int, bool) {
 	case int:
 		return v, true
 	case int8, int16, int32, int64:
-		return int(reflect.ValueOf(v).Int()), true
+		i := reflect.ValueOf(v).Int()
+		if i >= int64(math.MinInt) && i <= int64(math.MaxInt) {
+			return int(i), true
+		}
+		return 0, false // Overflow
 	case uint, uint8, uint16, uint32, uint64:
 		u := reflect.ValueOf(v).Uint()
 		if u <= uint64(math.MaxInt) {
@@ -190,7 +194,11 @@ func (p *Params) GetIntOk(key string) (int, bool) {
 		}
 		return 0, false // Overflow
 	case float32, float64:
-		return int(v.(float64)), true
+		f := reflect.ValueOf(v).Float()
+		if f >= float64(math.MinInt) && f <= float64(math.MaxInt) && f == math.Trunc(f) {
+			return int(f), true
+		}
+		return 0, false // Overflow or non-integer float
 	case string:
 		if parsedInt, err := strconv.ParseInt(v, 10, 64); err == nil {
 			if parsedInt >= int64(math.MinInt) && parsedInt <= int64(math.MaxInt) {
@@ -198,9 +206,7 @@ func (p *Params) GetIntOk(key string) (int, bool) {
 			}
 			return 0, false // Overflow
 		}
-		if parsedFloat, err := strconv.ParseFloat(v, 64); err == nil {
-			return int(parsedFloat), true
-		}
+		return 0, false // Parsing failed
 	case []byte:
 		s := string(v)
 		if parsedInt, err := strconv.ParseInt(s, 10, 64); err == nil {
@@ -209,11 +215,10 @@ func (p *Params) GetIntOk(key string) (int, bool) {
 			}
 			return 0, false // Overflow
 		}
-		if parsedFloat, err := strconv.ParseFloat(s, 64); err == nil {
-			return int(parsedFloat), true
-		}
+		return 0, false // Parsing failed
+	default:
+		return 0, false
 	}
-	return 0, false
 }
 
 // GetInt get param by key, return integer
