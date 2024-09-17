@@ -10,7 +10,6 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
-	"io/ioutil"
 	"log"
 	"math"
 	"mime/multipart"
@@ -43,7 +42,7 @@ const (
 // Variables for parameters package
 var (
 	typeOfTime      = reflect.TypeOf(time.Time{})
-	typeOfPtrToTime = reflect.PtrTo(typeOfTime)
+	typeOfPtrToTime = reflect.PointerTo(typeOfTime)
 )
 
 // paramKey used for context.WithValue
@@ -110,6 +109,8 @@ func (p *Params) GetFloatSliceOk(key string) ([]float64, bool) {
 			for i, k := range raw {
 				if num, err := strconv.ParseFloat(k, 64); err == nil {
 					slice[i] = num
+				} else {
+					return slice, false
 				}
 			}
 			return slice, true
@@ -119,9 +120,11 @@ func (p *Params) GetFloatSliceOk(key string) ([]float64, bool) {
 			for i, k := range raw {
 				if num, floatOk := k.(float64); floatOk {
 					slice[i] = num
-				} else if num, stringOk := k.(string); stringOk {
-					if parsed, err := strconv.ParseFloat(num, 64); err == nil {
+				} else if numS, stringOk := k.(string); stringOk {
+					if parsed, err := strconv.ParseFloat(numS, 64); err == nil {
 						slice[i] = parsed
+					} else {
+						return slice, false
 					}
 				}
 			}
@@ -173,7 +176,7 @@ func (p *Params) GetIntOk(key string) (int, bool) {
 	if err == nil {
 		if integerValue, ok := val.(int64); ok {
 			return int(integerValue), true
-		} else if floatValue, ok := val.(float64); ok {
+		} else if floatValue, okF := val.(float64); okF {
 			return int(floatValue), true
 		}
 	}
@@ -297,11 +300,11 @@ func (p *Params) GetIntSliceOk(key string) ([]int, bool) {
 			for i, k := range raw {
 				if num, found := k.(int); found {
 					slice[i] = num
-				} else if num, found := k.(float64); found {
-					slice[i] = int(num)
-				} else if num, found := k.(string); found {
+				} else if numF, foundF := k.(float64); foundF {
+					slice[i] = int(numF)
+				} else if numS, foundS := k.(string); foundS {
 					if parsed, err := strconv.ParseInt(
-						num, 10, 64,
+						numS, 10, 64,
 					); err == nil {
 						slice[i] = int(parsed)
 					} else {
@@ -725,7 +728,7 @@ func ParseParams(req *http.Request) *Params {
 	}
 
 	// read the whole body into bytes
-	body, err := ioutil.ReadAll(req.Body)
+	body, err := io.ReadAll(req.Body)
 	if err == nil {
 		// must close
 		if err = req.Body.Close(); err == nil {
@@ -753,7 +756,7 @@ func ParseParams(req *http.Request) *Params {
 			buff := bytes.NewBuffer(body)
 			first := body[0]
 			if (first >= 0x80 && first <= 0x8f) || (first == 0xde || first == 0xdf) {
-				err := codec.NewDecoder(buff, &mh).Decode(&p.Values)
+				err = codec.NewDecoder(buff, &mh).Decode(&p.Values)
 				if err != nil && errors.Is(err, io.EOF) {
 					log.Println("failed decoding msgpack:", err)
 				}
@@ -761,7 +764,7 @@ func ParseParams(req *http.Request) *Params {
 				if p.Values == nil {
 					p.Values = make(map[string]interface{})
 				}
-				var err error
+				// var err error
 				for err == nil {
 					paramValues := make([]interface{}, 0)
 					err = codec.NewDecoder(buff, &mh).Decode(&paramValues)
@@ -789,7 +792,8 @@ func ParseParams(req *http.Request) *Params {
 	for k, v := range mux.Vars(req) {
 		const keyID = "id"
 		if strings.Contains(k, keyID) {
-			id, err := strconv.ParseUint(v, 10, 64)
+			var id uint64
+			id, err = strconv.ParseUint(v, 10, 64)
 			if err != nil {
 				p.Values[k] = v
 			} else {
