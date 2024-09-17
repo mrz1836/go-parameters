@@ -275,13 +275,45 @@ func (p *Params) GetInt32(key string) int32 {
 
 // GetInt64Ok get param by key, return integer
 func (p *Params) GetInt64Ok(key string) (int64, bool) {
-	val, ok := p.GetIntOk(key)
-
-	if !ok {
+	val, ok := p.Get(key)
+	if !ok || val == nil {
 		return 0, false
 	}
 
-	return int64(val), true
+	switch v := val.(type) {
+	case int64:
+		return v, true
+	case int, int8, int16, int32:
+		return int64(reflect.ValueOf(v).Int()), true
+	case uint, uint8, uint16, uint32, uint64:
+		u := reflect.ValueOf(v).Uint()
+		if u <= uint64(math.MaxInt64) {
+			return int64(u), true
+		}
+		return 0, false // Overflow
+	case float32, float64:
+		f := reflect.ValueOf(v).Float()
+		if f >= float64(math.MinInt64) && f <= float64(math.MaxInt64) {
+			// Check if the float is an integer value
+			if f == math.Trunc(f) {
+				return int64(f), true
+			}
+		}
+		return 0, false // Overflow or non-integer float
+	case string:
+		if parsedInt, err := strconv.ParseInt(v, 10, 64); err == nil {
+			return parsedInt, true
+		}
+		return 0, false // Parsing failed
+	case []byte:
+		s := string(v)
+		if parsedInt, err := strconv.ParseInt(s, 10, 64); err == nil {
+			return parsedInt, true
+		}
+		return 0, false // Parsing failed
+	default:
+		return 0, false
+	}
 }
 
 // GetInt64 get param by key, return integer
