@@ -53,7 +53,7 @@ func TestGetParams_ParseJSONBodyContentType(t *testing.T) {
 
 // TestGetParams_ParseNestedJSONBody
 func TestGetParams_ParseNestedJSONBody(t *testing.T) {
-	body := "{ \"test\": true, \"coord\": { \"lat\": 50.505, \"lon\": 10.101 }}"
+	body := "{ \"test\": true, \"coordinate\": { \"lat\": 50.505, \"lon\": 10.101 }}"
 	r, err := http.NewRequestWithContext(context.Background(), "POST", "test", strings.NewReader(body))
 	assert.NoError(t, err)
 	r.Header.Set("Content-Type", "application/json")
@@ -66,26 +66,26 @@ func TestGetParams_ParseNestedJSONBody(t *testing.T) {
 	assert.Equal(t, true, present)
 	assert.Equal(t, true, val)
 
-	val, present = params.Get("coord")
+	val, present = params.Get("coordinate")
 	assert.Equal(t, true, present)
 
-	coord := val.(map[string]interface{})
+	coordinate := val.(map[string]interface{})
 
 	var lat interface{}
-	lat, present = coord["lat"]
+	lat, present = coordinate["lat"]
 	assert.Equal(t, true, present)
 	assert.Equal(t, 50.505, lat)
 
-	lat, present = params.Get("coord.lat")
+	lat, present = params.Get("coordinate.lat")
 	assert.Equal(t, true, present)
 	assert.Equal(t, 50.505, lat)
 
 	var lon interface{}
-	lon, present = coord["lon"]
+	lon, present = coordinate["lon"]
 	assert.Equal(t, true, present)
 	assert.Equal(t, 10.101, lon)
 
-	lon, present = params.Get("coord.lon")
+	lon, present = params.Get("coordinate.lon")
 	assert.Equal(t, true, present)
 	assert.Equal(t, 10.101, lon)
 }
@@ -485,7 +485,7 @@ func TestGetParams_ParseJSONBodyMux(t *testing.T) {
 	r.Header.Set("Content-Type", "application/json")
 	m := mux.NewRouter()
 	// m.KeepContext = true
-	m.HandleFunc("/test/{id:[0-9]+}", func(w http.ResponseWriter, r *http.Request) {
+	m.HandleFunc("/test/{id:[0-9]+}", func(_ http.ResponseWriter, r *http.Request) {
 		r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
 
 		params := GetParams(r)
@@ -714,7 +714,7 @@ func TestCustomTypeSetter(t *testing.T) {
 			Field1: "Goodbye World",
 		},
 	}
-	CustomTypeSetter = func(field *reflect.Value, value interface{}) error {
+	CustomTypeSetter = func(field *reflect.Value, _ interface{}) error {
 		if field.Type() == reflect.TypeOf(expected.NestStruct) {
 			field.Set(reflect.ValueOf(expected.NestStruct))
 			return nil
@@ -749,7 +749,7 @@ func TestMakeParsedReq(t *testing.T) {
 	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
 	params := GetParams(r)
 
-	fn := func(w http.ResponseWriter, r *http.Request) {
+	fn := func(_ http.ResponseWriter, r *http.Request) {
 		r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, params))
 		p := GetParams(r)
 		val, present := p.Get("test")
