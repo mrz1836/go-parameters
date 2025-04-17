@@ -13,7 +13,7 @@ import (
 )
 
 // Index is a basic request
-func Index(w http.ResponseWriter, req *http.Request) {
+func Index(w http.ResponseWriter, _ *http.Request) {
 	_, _ = fmt.Fprint(w, `{"Hello":"World"}`)
 }
 
@@ -37,5 +37,5 @@ func main() {
 	router.GET("/hello/:name", parameters.GeneralJSONResponse(Hello))
 
 	log.Println("Running examples on port 8080...")
-	log.Fatal(http.ListenAndServe(":8080", router))
+	log.Fatal(http.ListenAndServe(":8080", router)) //nolint:gosec // this is just an example
 }

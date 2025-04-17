@@ -92,8 +92,8 @@ type gzipResponseWriter struct {
 
 // Write will write the content
 func (w gzipResponseWriter) Write(b []byte) (int, error) {
-	if "" == w.Header().Get("Content-Type") {
-		// If no content type, apply sniffing algorithm to un-gzipped body.
+	if w.Header().Get("Content-Type") == "" {
+		// If no content type, apply the sniffing algorithm to un-gzipped body.
 		w.Header().Set("Content-Type", http.DetectContentType(b))
 	}
 	return w.Writer.Write(b)
