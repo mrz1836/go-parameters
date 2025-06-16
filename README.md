@@ -4,7 +4,7 @@
 [![Release](https://img.shields.io/github/release-pre/mrz1836/go-parameters.svg?logo=github&style=flat)](https://github.com/mrz1836/go-parameters/releases)
 [![Build Status](https://img.shields.io/github/actions/workflow/status/mrz1836/go-parameters/run-tests.yml?branch=master&logo=github&v=2)](https://github.com/mrz1836/go-parameters/actions)
 [![Report](https://goreportcard.com/badge/github.com/mrz1836/go-parameters?style=flat&p=1)](https://goreportcard.com/report/github.com/mrz1836/go-parameters)
-[![codecov](https://codecov.io/gh/mrz1836/go-parameters/branch/master/graph/badge.svg)](https://codecov.io/gh/mrz1836/go-parameters)
+[![codecov](https://codecov.io/gh/mrz1836/go-parameters/graph/badge.svg?token=T7PRW9OFJ3)](https://codecov.io/gh/mrz1836/go-parameters)
 [![Go](https://img.shields.io/github/go-mod/go-version/mrz1836/go-parameters)](https://golang.org/)
 [![Sponsor](https://img.shields.io/badge/sponsor-MrZ-181717.svg?logo=github&style=flat&v=3)](https://github.com/sponsors/mrz1836)
 [![Donate](https://img.shields.io/badge/donate-bitcoin-ff9900.svg?logo=bitcoin&style=flat)](https://mrz1818.com/?tab=tips&utm_source=github&utm_medium=sponsor-link&utm_campaign=go-parameters&utm_term=go-parameters&utm_content=go-parameters)
@@ -39,7 +39,7 @@ View the generated [documentation](https://pkg.go.dev/github.com/mrz1836/go-para
 [![GoDoc](https://godoc.org/github.com/mrz1836/go-parameters?status.svg&style=flat)](https://pkg.go.dev/github.com/mrz1836/go-parameters)
 
 ### Features
-- Uses the fastest router: Julien Schmidt's [httprouter](https://github.com/julienschmidt/httprouter)
+- This package uses the fastest router: Julien Schmidt's [httprouter](https://github.com/julienschmidt/httprouter)
 - Works with `json`, `msgpack`, and `multi-part` forms
 - Handles all standard types for `GetParams`
 - Handler methods like `MakeParsedReq()` for `httprouter` use
@@ -110,7 +110,7 @@ vet                  Run the Go vet application
 
 ## Examples & Tests
 All unit tests and [examples](examples) run via [GitHub Actions](https://github.com/mrz1836/go-parameters/actions) and
-uses [Go version 1.23.x](https://golang.org/doc/go1.23). View the [configuration file](.github/workflows/run-tests.yml).
+ use [Go version 1.23.x](https://golang.org/doc/go1.23). View the [configuration file](.github/workflows/run-tests.yml).
 
 Run all tests (including integration tests)
 ```shell script
