@@ -98,7 +98,7 @@ go get -u github.com/mrz1836/go-parameters
 
 ## Documentation
 View the generated [documentation](https://pkg.go.dev/github.com/mrz1836/go-parameters)
- 
+
 [![GoDoc](https://godoc.org/github.com/mrz1836/go-parameters?status.svg&style=flat)](https://pkg.go.dev/github.com/mrz1836/go-parameters)
 
 ### Features
