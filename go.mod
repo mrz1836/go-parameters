@@ -1,6 +1,6 @@
 module github.com/mrz1836/go-parameters
 
-go 1.23
+go 1.24
 
 require (
 	github.com/gorilla/mux v1.8.1
