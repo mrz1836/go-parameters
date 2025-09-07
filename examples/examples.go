@@ -19,7 +19,6 @@ func Index(w http.ResponseWriter, _ *http.Request) {
 
 // Hello is an example of using parameters from the request
 func Hello(w http.ResponseWriter, req *http.Request) {
-
 	params := parameters.GetParams(req)
 
 	name, ok := params.GetStringOk("name")

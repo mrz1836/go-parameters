@@ -9,7 +9,6 @@ func UniqueUint64(in []uint64) []uint64 {
 			found[v] = struct{}{}
 			out = append(out, v)
 		}
-
 	}
 	return out
 }

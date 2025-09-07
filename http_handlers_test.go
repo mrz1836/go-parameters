@@ -173,7 +173,6 @@ func TestFilterMap(t *testing.T) {
 
 // TestGeneralResponse tests the GeneralResponse function
 func TestGeneralResponse(t *testing.T) {
-
 	t.Run("Without GZIP", func(t *testing.T) {
 		// Create a mock HTTP request
 		req := httptest.NewRequest(http.MethodGet, "https://example.com", nil)

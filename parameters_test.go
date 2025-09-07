@@ -16,15 +16,17 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/julienschmidt/httprouter"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 const testJSONParam = `{ "test": true }`
 
+var errNoTypeDefinition = errors.New("no type definition found")
+
 // TestGetParams_ParseJSONBody tests the method with JSON body
 func TestGetParams_ParseJSONBody(t *testing.T) {
-
 	r, err := http.NewRequestWithContext(context.Background(), http.MethodPost, "test", strings.NewReader(testJSONParam))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.NotNil(t, r)
 
 	r.Header.Set("Content-Type", "application/json")
@@ -34,14 +36,14 @@ func TestGetParams_ParseJSONBody(t *testing.T) {
 	params := GetParams(r)
 
 	val, present := params.Get("test")
-	assert.Equal(t, true, present)
+	assert.True(t, present)
 	assert.Equal(t, true, val)
 }
 
 // BenchmarkGetParams_ParseJSONBody benchmarks the method
 func BenchmarkGetParams_ParseJSONBody(b *testing.B) {
 	r, err := http.NewRequestWithContext(context.Background(), http.MethodPost, "test", strings.NewReader(testJSONParam))
-	assert.NoError(b, err)
+	require.NoError(b, err)
 	r.Header.Set("Content-Type", "application/json")
 
 	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
@@ -53,9 +55,8 @@ func BenchmarkGetParams_ParseJSONBody(b *testing.B) {
 
 // TestGetParams_ParseJSONBodyContentType tests the method with JSON body and content type
 func TestGetParams_ParseJSONBodyContentType(t *testing.T) {
-
 	r, err := http.NewRequestWithContext(context.Background(), http.MethodPost, "test", strings.NewReader(testJSONParam))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	r.Header.Set("Content-Type", "application/json; charset=utf8")
 
 	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
@@ -63,7 +64,7 @@ func TestGetParams_ParseJSONBodyContentType(t *testing.T) {
 	params := GetParams(r)
 
 	val, present := params.Get("test")
-	assert.Equal(t, true, present)
+	assert.True(t, present)
 	assert.Equal(t, true, val)
 }
 
@@ -71,7 +72,7 @@ func TestGetParams_ParseJSONBodyContentType(t *testing.T) {
 func TestGetParams_ParseNestedJSONBody(t *testing.T) {
 	body := "{ \"test\": true, \"coordinate\": { \"lat\": 50.505, \"lon\": 10.101 }}"
 	r, err := http.NewRequestWithContext(context.Background(), http.MethodPost, "test", strings.NewReader(body))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	r.Header.Set("Content-Type", "application/json")
 
 	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
@@ -79,45 +80,45 @@ func TestGetParams_ParseNestedJSONBody(t *testing.T) {
 	params := GetParams(r)
 
 	val, present := params.Get("test")
-	assert.Equal(t, true, present)
+	assert.True(t, present)
 	assert.Equal(t, true, val)
 
 	val, present = params.Get("coordinate")
-	assert.Equal(t, true, present)
+	assert.True(t, present)
 
 	coordinate := val.(map[string]interface{})
 
 	var lat interface{}
 	lat, present = coordinate["lat"]
-	assert.Equal(t, true, present)
-	assert.Equal(t, 50.505, lat)
+	assert.True(t, present)
+	assert.InEpsilon(t, 50.505, lat, 0.0001)
 
 	lat, present = params.Get("coordinate.lat")
-	assert.Equal(t, true, present)
-	assert.Equal(t, 50.505, lat)
+	assert.True(t, present)
+	assert.InEpsilon(t, 50.505, lat, 0.0001)
 
 	var lon interface{}
 	lon, present = coordinate["lon"]
-	assert.Equal(t, true, present)
-	assert.Equal(t, 10.101, lon)
+	assert.True(t, present)
+	assert.InEpsilon(t, 10.101, lon, 0.0001)
 
 	lon, present = params.Get("coordinate.lon")
-	assert.Equal(t, true, present)
-	assert.Equal(t, 10.101, lon)
+	assert.True(t, present)
+	assert.InEpsilon(t, 10.101, lon, 0.0001)
 }
 
 // TestGetParams tests the GetParams method
 func TestGetParams(t *testing.T) {
 	body := ""
 	r, err := http.NewRequestWithContext(context.Background(), http.MethodGet, "test?test=true", strings.NewReader(body))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
 
 	params := GetParams(r)
 
 	val, present := params.Get("test")
-	assert.Equal(t, true, present)
+	assert.True(t, present)
 	assert.Equal(t, true, val)
 }
 
@@ -125,7 +126,7 @@ func TestGetParams(t *testing.T) {
 func BenchmarkGetParams(b *testing.B) {
 	body := ""
 	r, err := http.NewRequestWithContext(context.Background(), http.MethodGet, "test?test=true", strings.NewReader(body))
-	assert.NoError(b, err)
+	require.NoError(b, err)
 
 	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
 
@@ -138,14 +139,14 @@ func BenchmarkGetParams(b *testing.B) {
 func TestParams_GetStringOk(t *testing.T) {
 	body := ""
 	r, err := http.NewRequestWithContext(context.Background(), http.MethodGet, "/test?test=string", strings.NewReader(body))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
 
 	params := GetParams(r)
 
 	val, ok := params.GetStringOk("test")
-	assert.Equal(t, true, ok)
+	assert.True(t, ok)
 	assert.Equal(t, "string", val)
 
 	val = params.GetString("test")
@@ -156,7 +157,7 @@ func TestParams_GetStringOk(t *testing.T) {
 func BenchmarkParams_GetStringOk(b *testing.B) {
 	body := ""
 	r, err := http.NewRequestWithContext(context.Background(), http.MethodGet, "/test?test=string", strings.NewReader(body))
-	assert.NoError(b, err)
+	require.NoError(b, err)
 
 	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
 
@@ -171,22 +172,22 @@ func BenchmarkParams_GetStringOk(b *testing.B) {
 func TestParams_GetBoolOk(t *testing.T) {
 	body := ""
 	r, err := http.NewRequestWithContext(context.Background(), http.MethodGet, "/test?test=true", strings.NewReader(body))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
 
 	params := GetParams(r)
 
 	val, ok := params.GetBoolOk("test")
-	assert.Equal(t, true, ok)
-	assert.Equal(t, true, val)
+	assert.True(t, ok)
+	assert.True(t, val)
 }
 
 // BenchmarkGetBoolOk benchmarks the method
 func BenchmarkParams_GetBoolOk(b *testing.B) {
 	body := ""
 	r, err := http.NewRequestWithContext(context.Background(), http.MethodGet, "/test?test=true", strings.NewReader(body))
-	assert.NoError(b, err)
+	require.NoError(b, err)
 
 	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
 
@@ -207,18 +208,18 @@ func TestParams_GetBytesOk(t *testing.T) {
 
 	body := ""
 	r, err := http.NewRequestWithContext(context.Background(), http.MethodGet, "/test?test="+testString, strings.NewReader(body))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
 
 	params := GetParams(r)
 
 	val, ok := params.GetBytesOk("test")
-	assert.Equal(t, true, ok)
-	assert.Equal(t, 75, len(val))
+	assert.True(t, ok)
+	assert.Len(t, val, 75)
 
 	val = params.GetBytes("test")
-	assert.Equal(t, 75, len(val))
+	assert.Len(t, val, 75)
 }
 
 // BenchmarkParams_GetBytesOk benchmarks the method
@@ -231,7 +232,7 @@ func BenchmarkParams_GetBytesOk(b *testing.B) {
 
 	body := ""
 	r, err := http.NewRequestWithContext(context.Background(), http.MethodGet, "/test?test="+testString, strings.NewReader(body))
-	assert.NoError(b, err)
+	require.NoError(b, err)
 
 	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
 
@@ -246,7 +247,7 @@ func BenchmarkParams_GetBytesOk(b *testing.B) {
 func BenchmarkParams_GetBool(b *testing.B) {
 	body := ""
 	r, err := http.NewRequestWithContext(context.Background(), http.MethodGet, "/test?test=true", strings.NewReader(body))
-	assert.NoError(b, err)
+	require.NoError(b, err)
 
 	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
 
@@ -261,25 +262,25 @@ func BenchmarkParams_GetBool(b *testing.B) {
 func TestParams_GetFloatOk(t *testing.T) {
 	body := ""
 	r, err := http.NewRequestWithContext(context.Background(), http.MethodGet, "/test?test=123.1234", strings.NewReader(body))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
 
 	params := GetParams(r)
 
 	val, ok := params.GetFloatOk("test")
-	assert.Equal(t, true, ok)
-	assert.Equal(t, 123.1234, val)
+	assert.True(t, ok)
+	assert.InEpsilon(t, 123.1234, val, 0.0001)
 
 	val = params.GetFloat("test")
-	assert.Equal(t, 123.1234, val)
+	assert.InEpsilon(t, 123.1234, val, 0.0001)
 }
 
 // BenchmarkParams_GetFloatOk benchmarks the method
 func BenchmarkParams_GetFloatOk(b *testing.B) {
 	body := ""
 	r, err := http.NewRequestWithContext(context.Background(), http.MethodGet, "/test?test=123.1234", strings.NewReader(body))
-	assert.NoError(b, err)
+	require.NoError(b, err)
 
 	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
 
@@ -294,29 +295,29 @@ func BenchmarkParams_GetFloatOk(b *testing.B) {
 func TestParams_GetFloatOk_Zero(t *testing.T) {
 	body := ""
 	r, err := http.NewRequestWithContext(context.Background(), http.MethodGet, "/test?test=null", strings.NewReader(body))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
 
 	params := GetParams(r)
 
 	val, ok := params.GetFloatOk("test")
-	assert.Equal(t, float64(0), val)
-	assert.Equal(t, true, ok)
+	assert.InDelta(t, float64(0), val, 0.0001)
+	assert.True(t, ok)
 }
 
 // TestParams_GetIntOk tests the GetIntOk method
 func TestParams_GetIntOk(t *testing.T) {
 	body := ""
 	r, err := http.NewRequestWithContext(context.Background(), http.MethodGet, "/test?test=123", strings.NewReader(body))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
 
 	params := GetParams(r)
 
 	val, ok := params.GetIntOk("test")
-	assert.Equal(t, true, ok)
+	assert.True(t, ok)
 	assert.Equal(t, 123, val)
 
 	val = params.GetInt("test")
@@ -327,7 +328,7 @@ func TestParams_GetIntOk(t *testing.T) {
 func BenchmarkParams_GetIntOk(b *testing.B) {
 	body := ""
 	r, err := http.NewRequestWithContext(context.Background(), http.MethodGet, "/test?test=123", strings.NewReader(body))
-	assert.NoError(b, err)
+	require.NoError(b, err)
 
 	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
 
@@ -342,14 +343,14 @@ func BenchmarkParams_GetIntOk(b *testing.B) {
 func TestParams_GetInt8Ok(t *testing.T) {
 	body := ""
 	r, err := http.NewRequestWithContext(context.Background(), http.MethodGet, "/test?test=123", strings.NewReader(body))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
 
 	params := GetParams(r)
 
 	val, ok := params.GetInt8Ok("test")
-	assert.Equal(t, true, ok)
+	assert.True(t, ok)
 	assert.Equal(t, int8(123), val)
 }
 
@@ -357,7 +358,7 @@ func TestParams_GetInt8Ok(t *testing.T) {
 func TestParams_GetInt8TooSmall(t *testing.T) {
 	body := ""
 	r, err := http.NewRequestWithContext(context.Background(), http.MethodGet, "/test?test=-300", strings.NewReader(body))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
 
@@ -371,7 +372,7 @@ func TestParams_GetInt8TooSmall(t *testing.T) {
 func TestParams_GetInt8TooBig(t *testing.T) {
 	body := ""
 	r, err := http.NewRequestWithContext(context.Background(), http.MethodGet, "/test?test=300", strings.NewReader(body))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
 
@@ -385,14 +386,14 @@ func TestParams_GetInt8TooBig(t *testing.T) {
 func TestParams_GetInt16Ok(t *testing.T) {
 	body := ""
 	r, err := http.NewRequestWithContext(context.Background(), http.MethodGet, "/test?test=123", strings.NewReader(body))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
 
 	params := GetParams(r)
 
 	val, ok := params.GetInt16Ok("test")
-	assert.Equal(t, true, ok)
+	assert.True(t, ok)
 	assert.Equal(t, int16(123), val)
 
 	val = params.GetInt16("test")
@@ -403,7 +404,7 @@ func TestParams_GetInt16Ok(t *testing.T) {
 func TestParams_GetInt16TooSmall(t *testing.T) {
 	body := ""
 	r, err := http.NewRequestWithContext(context.Background(), http.MethodGet, "/test?test=-32769", strings.NewReader(body))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
 
@@ -417,7 +418,7 @@ func TestParams_GetInt16TooSmall(t *testing.T) {
 func TestParams_GetInt16TooBig(t *testing.T) {
 	body := ""
 	r, err := http.NewRequestWithContext(context.Background(), http.MethodGet, "/test?test=32769", strings.NewReader(body))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
 
@@ -431,14 +432,14 @@ func TestParams_GetInt16TooBig(t *testing.T) {
 func TestParams_GetInt32Ok(t *testing.T) {
 	body := ""
 	r, err := http.NewRequestWithContext(context.Background(), http.MethodGet, "/test?test=123", strings.NewReader(body))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
 
 	params := GetParams(r)
 
 	val, ok := params.GetInt32Ok("test")
-	assert.Equal(t, true, ok)
+	assert.True(t, ok)
 	assert.Equal(t, int32(123), val)
 
 	val = params.GetInt32("test")
@@ -449,7 +450,7 @@ func TestParams_GetInt32Ok(t *testing.T) {
 func TestParams_GetInt32TooSmall(t *testing.T) {
 	body := ""
 	r, err := http.NewRequestWithContext(context.Background(), http.MethodGet, fmt.Sprintf("/test?test=%d", math.MinInt32-1), strings.NewReader(body))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
 
@@ -463,7 +464,7 @@ func TestParams_GetInt32TooSmall(t *testing.T) {
 func TestParams_GetInt32TooBig(t *testing.T) {
 	body := ""
 	r, err := http.NewRequestWithContext(context.Background(), http.MethodGet, fmt.Sprintf("/test?test=%d", math.MaxInt32+1), strings.NewReader(body))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
 
@@ -477,14 +478,14 @@ func TestParams_GetInt32TooBig(t *testing.T) {
 func TestParams_GetInt64Ok(t *testing.T) {
 	body := ""
 	r, err := http.NewRequestWithContext(context.Background(), http.MethodGet, "/test?test=123", strings.NewReader(body))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
 
 	params := GetParams(r)
 
 	val, ok := params.GetInt64Ok("test")
-	assert.Equal(t, true, ok)
+	assert.True(t, ok)
 	assert.Equal(t, int64(123), val)
 
 	val = params.GetInt64("test")
@@ -495,7 +496,7 @@ func TestParams_GetInt64Ok(t *testing.T) {
 func BenchmarkParams_GetInt64Ok(b *testing.B) {
 	body := ""
 	r, err := http.NewRequestWithContext(context.Background(), http.MethodGet, "/test?test=123", strings.NewReader(body))
-	assert.NoError(b, err)
+	require.NoError(b, err)
 
 	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
 
@@ -510,7 +511,7 @@ func BenchmarkParams_GetInt64Ok(b *testing.B) {
 func TestParams_GetInt64TooSmall(t *testing.T) {
 	body := ""
 	r, err := http.NewRequestWithContext(context.Background(), http.MethodGet, fmt.Sprintf("/test?test=%d", 0), strings.NewReader(body))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
 
@@ -524,14 +525,14 @@ func TestParams_GetInt64TooSmall(t *testing.T) {
 func TestParams_GetUint64Ok(t *testing.T) {
 	body := ""
 	r, err := http.NewRequestWithContext(context.Background(), http.MethodGet, "/test?test=123", strings.NewReader(body))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
 
 	params := GetParams(r)
 
 	val, ok := params.GetUint64Ok("test")
-	assert.Equal(t, true, ok)
+	assert.True(t, ok)
 	assert.Equal(t, uint64(123), val)
 }
 
@@ -539,7 +540,7 @@ func TestParams_GetUint64Ok(t *testing.T) {
 func TestGetParams_Post(t *testing.T) {
 	body := "test=true"
 	r, err := http.NewRequestWithContext(context.Background(), http.MethodPost, "test", strings.NewReader(body))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	r.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
 	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
@@ -547,7 +548,7 @@ func TestGetParams_Post(t *testing.T) {
 	params := GetParams(r)
 
 	val, present := params.Get("test")
-	assert.Equal(t, true, present)
+	assert.True(t, present)
 	assert.Equal(t, true, val)
 }
 
@@ -555,14 +556,14 @@ func TestGetParams_Post(t *testing.T) {
 func TestParams_GetTimeOk(t *testing.T) {
 	body := ""
 	r, err := http.NewRequestWithContext(context.Background(), http.MethodGet, "/test?test=2020-12-31", strings.NewReader(body))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
 
 	params := GetParams(r)
 
 	val, ok := params.GetTimeOk("test")
-	assert.Equal(t, true, ok)
+	assert.True(t, ok)
 	assert.Equal(t, "2020-12-31 00:00:00 +0000 UTC", val.String())
 }
 
@@ -570,7 +571,7 @@ func TestParams_GetTimeOk(t *testing.T) {
 func TestGetParams_Put(t *testing.T) {
 	body := "test=true"
 	r, err := http.NewRequestWithContext(context.Background(), http.MethodPut, "test", strings.NewReader(body))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	r.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
 	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
@@ -578,15 +579,14 @@ func TestGetParams_Put(t *testing.T) {
 	params := GetParams(r)
 
 	val, present := params.Get("test")
-	assert.Equal(t, true, present)
+	assert.True(t, present)
 	assert.Equal(t, true, val)
 }
 
 // TestGetParams_ParsePostUrlJSON tests the method with a JSON body
 func TestGetParams_ParsePostUrlJSON(t *testing.T) {
-
 	r, err := http.NewRequestWithContext(context.Background(), "PUT", "test?test=false&id=1", strings.NewReader(testJSONParam))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	r.Header.Set("Content-Type", "application/json")
 
 	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
@@ -594,19 +594,18 @@ func TestGetParams_ParsePostUrlJSON(t *testing.T) {
 	params := GetParams(r)
 
 	val, present := params.Get("test")
-	assert.Equal(t, true, present)
+	assert.True(t, present)
 	assert.Equal(t, true, val)
 
 	val, present = params.GetFloatOk("id")
-	assert.Equal(t, true, present)
-	assert.Equal(t, 1.0, val)
+	assert.True(t, present)
+	assert.InEpsilon(t, 1.0, val, 0.0001)
 }
 
 // TestGetParams_ParseJSONBodyMux tests the method with mux
 func TestGetParams_ParseJSONBodyMux(t *testing.T) {
-
 	r, err := http.NewRequestWithContext(context.Background(), http.MethodPost, "/test/42", strings.NewReader(testJSONParam))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	r.Header.Set("Content-Type", "application/json")
 	m := mux.NewRouter()
 	// m.KeepContext = true
@@ -616,16 +615,16 @@ func TestGetParams_ParseJSONBodyMux(t *testing.T) {
 		params := GetParams(r)
 
 		val, present := params.Get("test")
-		assert.Equal(t, true, present)
+		assert.True(t, present)
 		assert.Equal(t, true, val)
 
 		val, present = params.Get("id")
-		assert.Equal(t, true, present)
+		assert.True(t, present)
 		assert.Equal(t, uint64(42), val)
 	})
 
 	var match mux.RouteMatch
-	assert.Equal(t, true, m.Match(r, &match))
+	assert.True(t, m.Match(r, &match))
 	m.ServeHTTP(nil, r)
 }
 
@@ -633,7 +632,7 @@ func TestGetParams_ParseJSONBodyMux(t *testing.T) {
 func TestImbue(t *testing.T) {
 	body := "test=true&keys=this,that,something&values=1,2,3"
 	r, err := http.NewRequestWithContext(context.Background(), "PUT", "test", strings.NewReader(body))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	r.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
 	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
@@ -649,9 +648,9 @@ func TestImbue(t *testing.T) {
 	var obj testType
 	params.Imbue(&obj)
 
-	assert.Equal(t, true, obj.Test)
-	assert.Equal(t, 3, len(obj.Keys))
-	assert.Equal(t, 3, len(obj.Values))
+	assert.True(t, obj.Test)
+	assert.Len(t, obj.Keys, 3)
+	assert.Len(t, obj.Values, 3)
 
 	values := []int{1, 2, 3}
 	for i, k := range obj.Values {
@@ -663,7 +662,7 @@ func TestImbue(t *testing.T) {
 func TestImbue_Time(t *testing.T) {
 	body := "test=true&created_at=2016-06-07T00:30Z&remind_on=2016-07-17"
 	r, err := http.NewRequestWithContext(context.Background(), "PUT", "test", strings.NewReader(body))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	r.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
 	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
@@ -679,21 +678,21 @@ func TestImbue_Time(t *testing.T) {
 	var obj testType
 	params.Imbue(&obj)
 
-	assert.Equal(t, true, obj.Test)
+	assert.True(t, obj.Test)
 
 	createdAt, _ := time.Parse(time.RFC3339, "2016-06-07T00:30Z00:00")
-	assert.Equal(t, true, obj.CreatedAt.Equal(createdAt))
+	assert.True(t, obj.CreatedAt.Equal(createdAt))
 
 	remindOn, _ := time.Parse(DateOnly, "2016-07-17")
 	assert.NotNil(t, remindOn)
-	assert.Equal(t, true, obj.RemindOn.Equal(remindOn))
+	assert.True(t, obj.RemindOn.Equal(remindOn))
 }
 
 // TestHasAll tests the HasAll method
 func TestHasAll(t *testing.T) {
 	body := "test=true&keys=this,that,something&values=1,2,3"
 	r, err := http.NewRequestWithContext(context.Background(), "PUT", "test", strings.NewReader(body))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	r.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
 	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
@@ -702,34 +701,33 @@ func TestHasAll(t *testing.T) {
 
 	t.Run("test all", func(t *testing.T) {
 		ok, missing := params.HasAll("test", "keys", "values")
-		assert.Equal(t, true, ok)
-		assert.Equal(t, 0, len(missing))
+		assert.True(t, ok)
+		assert.Empty(t, missing)
 	})
 
 	t.Run("test partial", func(t *testing.T) {
 		ok, missing := params.HasAll("test")
-		assert.Equal(t, true, ok)
-		assert.Equal(t, 0, len(missing))
+		assert.True(t, ok)
+		assert.Empty(t, missing)
 	})
 
 	t.Run("test partial missing", func(t *testing.T) {
 		ok, missing := params.HasAll("test", "nope")
-		assert.Equal(t, false, ok)
-		assert.NotEqual(t, 0, len(missing))
+		assert.False(t, ok)
+		assert.NotEmpty(t, missing)
 	})
 
 	t.Run("test all missing", func(t *testing.T) {
 		ok, missing := params.HasAll("negative", "nope")
-		assert.Equal(t, false, ok)
-		assert.NotEqual(t, 0, len(missing))
+		assert.False(t, ok)
+		assert.NotEmpty(t, missing)
 	})
 }
 
 // TestGetParams_ParseEmpty test some garbage input, ids= "" (empty string) Should either be not ok, or empty slice
 func TestGetParams_ParseEmpty(t *testing.T) {
-
 	r, err := http.NewRequestWithContext(context.Background(), "PUT", "test?ids=", strings.NewReader(testJSONParam))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	r.Header.Set("Content-Type", "application/json")
 
 	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
@@ -737,15 +735,15 @@ func TestGetParams_ParseEmpty(t *testing.T) {
 	params := GetParams(r)
 
 	ids, ok := params.GetUint64SliceOk("ids")
-	assert.Equal(t, true, ok)
-	assert.Equal(t, 0, len(ids))
+	assert.True(t, ok)
+	assert.Empty(t, ids)
 }
 
 // TestGetParams_NegativeUint test Uint64 returns not ok for negative values
 func TestGetParams_NegativeUint(t *testing.T) {
 	body := "{\"id\":-1}"
 	r, err := http.NewRequestWithContext(context.Background(), "PUT", "test", strings.NewReader(body))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	r.Header.Set("Content-Type", "application/json")
 
 	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
@@ -753,12 +751,12 @@ func TestGetParams_NegativeUint(t *testing.T) {
 	params := GetParams(r)
 
 	id, ok := params.GetUint64Ok("id")
-	assert.Equal(t, false, ok)
+	assert.False(t, ok)
 	assert.Equal(t, uint64(0), id)
 
 	body = "{\"id\":1}"
 	r, err = http.NewRequestWithContext(context.Background(), "PUT", "test", strings.NewReader(body))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	r.Header.Set("Content-Type", "application/json")
 
 	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
@@ -766,7 +764,7 @@ func TestGetParams_NegativeUint(t *testing.T) {
 	params = GetParams(r)
 
 	id, ok = params.GetUint64Ok("id")
-	assert.Equal(t, true, ok)
+	assert.True(t, ok)
 	assert.Equal(t, uint64(1), id)
 }
 
@@ -844,7 +842,7 @@ func TestCustomTypeSetter(t *testing.T) {
 			field.Set(reflect.ValueOf(expected.NestStruct))
 			return nil
 		}
-		return errors.New("no type definition found")
+		return errNoTypeDefinition
 	}
 
 	r, err := http.NewRequestWithContext(
@@ -870,7 +868,7 @@ func TestCustomTypeSetter(t *testing.T) {
 // TestMakeParsedReq will test the MakeParsedReq function
 func TestMakeParsedReq(t *testing.T) {
 	r, err := http.NewRequestWithContext(context.Background(), http.MethodGet, "test?test=true", strings.NewReader(""))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
 	params := GetParams(r)
 
@@ -878,7 +876,7 @@ func TestMakeParsedReq(t *testing.T) {
 		r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, params))
 		p := GetParams(r)
 		val, present := p.Get("test")
-		assert.Equal(t, true, present)
+		assert.True(t, present)
 		assert.Equal(t, true, val)
 	}
 
@@ -1344,7 +1342,7 @@ func TestParams_GetIntSliceOk(t *testing.T) {
 func BenchmarkParams_GetIntSliceOk(b *testing.B) {
 	body := "integers=1,2,3,4,5"
 	r, err := http.NewRequestWithContext(context.Background(), http.MethodGet, "test", strings.NewReader(body))
-	assert.NoError(b, err)
+	require.NoError(b, err)
 
 	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
 
@@ -1553,7 +1551,7 @@ func TestParams_GetUint64Ok_Extended(t *testing.T) {
 func BenchmarkParams_GetUint64Ok(b *testing.B) {
 	body := ""
 	r, err := http.NewRequestWithContext(context.Background(), http.MethodGet, "/test?test=123", strings.NewReader(body))
-	assert.NoError(b, err)
+	require.NoError(b, err)
 
 	r = r.WithContext(context.WithValue(r.Context(), ParamsKeyName, ParseParams(r)))
 
@@ -2269,7 +2267,6 @@ func TestParams_GetTimeInLocationOk(t *testing.T) {
 
 // TestParams_GetTimeInLocation tests the GetTimeInLocation method
 func TestParams_GetTimeInLocation(t *testing.T) {
-
 	loc := time.UTC // You can specify any location you need
 
 	tests := []struct {

@@ -670,7 +670,6 @@ func (p *Params) Clone() *Params {
 
 // Imbue sets the parameters to the object by type; does not handle nested parameters
 func (p *Params) Imbue(obj interface{}) {
-
 	// Get the type of the object
 	typeOfObject := reflect.TypeOf(obj).Elem()
 
@@ -698,47 +697,36 @@ func (p *Params) Imbue(obj interface{}) {
 		if fieldType.Type.Kind() == reflect.String {
 			// Set string
 			field.Set(reflect.ValueOf(p.GetString(k)))
-
 		} else if fieldType.Type.Kind() == reflect.Uint64 {
 			// Set Uint64
 			field.Set(reflect.ValueOf(p.GetUint64(k)))
-
 		} else if fieldType.Type.Kind() == reflect.Int {
 			// Set Int
 			field.Set(reflect.ValueOf(p.GetInt(k)))
-
 		} else if fieldType.Type.Kind() == reflect.Bool {
 			// Set bool
 			field.Set(reflect.ValueOf(p.GetBool(k)))
-
 		} else if fieldType.Type.Kind() == reflect.Float32 {
 			// Set float32
 			field.Set(reflect.ValueOf(float32(p.GetFloat(k))))
-
 		} else if fieldType.Type.Kind() == reflect.Float64 {
 			// Set float64
 			field.Set(reflect.ValueOf(p.GetFloat(k)))
-
 		} else if fieldType.Type == reflect.SliceOf(reflect.TypeOf("")) {
 			// Set []string
 			field.Set(reflect.ValueOf(p.GetStringSlice(k)))
-
 		} else if fieldType.Type == reflect.SliceOf(reflect.TypeOf(0)) {
 			// Set []int
 			field.Set(reflect.ValueOf(p.GetIntSlice(k)))
-
 		} else if fieldType.Type == reflect.SliceOf(reflect.TypeOf(uint64(0))) {
 			// Set []uint64
 			field.Set(reflect.ValueOf(p.GetUint64Slice(k)))
-
 		} else if fieldType.Type == reflect.SliceOf(reflect.TypeOf(float64(0))) {
 			// Set []float64
 			field.Set(reflect.ValueOf(p.GetFloatSlice(k)))
-
 		} else if fieldType.Type == typeOfTime {
 			// Set time.Time
 			field.Set(reflect.ValueOf(p.GetTime(k)))
-
 		} else if fieldType.Type == typeOfPtrToTime {
 			// Set *time.Time
 			t := p.GetTime(k)

@@ -56,7 +56,6 @@ func SnakeToCamelCase(str string, ucFirst bool) string {
 
 // MakeFirstUpperCase upper cases the first letter of the string
 func MakeFirstUpperCase(s string) string {
-
 	// Handle empty and 1 character strings
 	if len(s) < 2 {
 		return strings.ToUpper(s)
