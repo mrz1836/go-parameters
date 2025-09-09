@@ -311,11 +311,11 @@ jobs:
 
           # Check fuzz test results if enabled
           if [[ "${{ inputs.fuzz-testing-enabled }}" == "true" ]]; then
-            if compgen -G "test-results/fuzz-stats-*.json" >/dev/null 2>&1; then
+            if compgen -G "test-results/test-stats-fuzz-*.json" >/dev/null 2>&1; then
               echo "📋 Found fuzz test statistics files:"
-              ls -la test-results/fuzz-stats-*.json
+              ls -la test-results/test-stats-fuzz-*.json
 
-              for stats_file in test-results/fuzz-stats-*.json; do
+              for stats_file in test-results/test-stats-fuzz-*.json; do
                 echo "📊 Checking $stats_file..."
 
                 # Extract fuzz test results
@@ -594,8 +594,8 @@ jobs:
 
           FUZZ_SUITE_COUNT=0
           if [[ "${{ inputs.fuzz-testing-enabled }}" == "true" ]]; then
-            if ls test-results/fuzz-stats-*.json >/dev/null 2>&1; then
-              FUZZ_SUITE_COUNT=$(ls test-results/fuzz-stats-*.json | wc -l)
+            if ls test-results/test-stats-fuzz-*.json >/dev/null 2>&1; then
+              FUZZ_SUITE_COUNT=$(ls test-results/test-stats-fuzz-*.json | wc -l)
             fi
           fi
 
@@ -615,7 +615,7 @@ jobs:
 
           # Aggregate fuzz test counts
           if [[ $FUZZ_SUITE_COUNT -gt 0 ]]; then
-            for stats_file in test-results/fuzz-stats-*.json; do
+            for stats_file in test-results/test-stats-fuzz-*.json; do
               if [[ -f "$stats_file" ]]; then
                 FUZZ_COUNT=$(jq -r '.fuzz_test_count // 0' "$stats_file")
                 TOTAL_FUZZ_TESTS=$((TOTAL_FUZZ_TESTS + FUZZ_COUNT))
