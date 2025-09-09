@@ -9,6 +9,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"log"
 	"math"
@@ -875,7 +876,24 @@ func ParseParams(req *http.Request) *Params {
 						log.Println("failed decoding msgpack:", err)
 					} else {
 						for i := len(paramValues) - 1; i >= 1; i -= 2 {
-							p.Values[string(paramValues[i-1].([]byte))] = paramValues[i]
+							// Safely convert key to string, handling different types
+							var keyStr string
+							switch keyVal := paramValues[i-1].(type) {
+							case []byte:
+								keyStr = string(keyVal)
+							case string:
+								keyStr = keyVal
+							case int64, int, int32, int16, int8:
+								keyStr = fmt.Sprintf("%d", keyVal)
+							case uint64, uint, uint32, uint16, uint8:
+								keyStr = fmt.Sprintf("%d", keyVal)
+							case float64, float32:
+								keyStr = fmt.Sprintf("%.0f", keyVal)
+							default:
+								// Skip this key-value pair if key type is not supported
+								continue
+							}
+							p.Values[keyStr] = paramValues[i]
 						}
 					}
 				}

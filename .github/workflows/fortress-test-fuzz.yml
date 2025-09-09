@@ -139,6 +139,7 @@ jobs:
       # ————————————————————————————————————————————————————————————————
       - name: 🔍 Analyze fuzz test failures
         if: always() && steps.run-fuzz-tests.outputs.fuzz-exit-code != '0'
+        continue-on-error: true
         uses: ./.github/actions/test-failure-detection
         with:
           output-file: "fuzz-output.log"
