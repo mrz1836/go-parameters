@@ -50,7 +50,7 @@ jobs:
   # Fuzz Testing
   # ----------------------------------------------------------------------------------
   fuzz-tests:
-    name: 🎯 Fuzz Tests
+    name: 🧪 Fuzz Tests
     if: inputs.fuzz-testing-enabled == 'true'
     timeout-minutes: 15 # Fuzz tests have shorter timeout
     permissions:
@@ -114,11 +114,11 @@ jobs:
       # ————————————————————————————————————————————————————————————————
       # Run fuzz tests
       # ————————————————————————————————————————————————————————————————
-      - name: 🎯 Run fuzz tests
+      - name: 🧪 Run fuzz tests
         id: run-fuzz-tests
         continue-on-error: true
         run: |
-          echo "🎯 Running fuzz tests in parallel..."
+          echo "🧪 Running fuzz tests in parallel..."
           FUZZ_TIMEOUT="${TEST_TIMEOUT_FUZZ:-5m}"
           magex test:fuzz time=5s -timeout $FUZZ_TIMEOUT 2>&1 | tee fuzz-output.log
           FUZZ_EXIT_CODE=${PIPESTATUS[0]}
