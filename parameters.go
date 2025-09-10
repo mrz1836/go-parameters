@@ -115,6 +115,10 @@ func (p *Params) GetFloatSliceOk(key string) ([]float64, bool) {
 			slice := make([]float64, 0, len(raw))
 			for _, k := range raw {
 				if num, err := strconv.ParseFloat(strings.TrimSpace(k), 64); err == nil {
+					// Reject NaN and Infinity values
+					if math.IsNaN(num) || math.IsInf(num, 0) {
+						return []float64{}, false
+					}
 					slice = append(slice, num)
 				} else {
 					return []float64{}, false
@@ -130,6 +134,10 @@ func (p *Params) GetFloatSliceOk(key string) ([]float64, bool) {
 			slice := make([]float64, 0, len(raw))
 			for _, k := range raw {
 				if num, err := strconv.ParseFloat(strings.TrimSpace(k), 64); err == nil {
+					// Reject NaN and Infinity values
+					if math.IsNaN(num) || math.IsInf(num, 0) {
+						return []float64{}, false
+					}
 					slice = append(slice, num)
 				} else {
 					return []float64{}, false
@@ -141,9 +149,17 @@ func (p *Params) GetFloatSliceOk(key string) ([]float64, bool) {
 			for _, k := range v {
 				switch innerVal := k.(type) {
 				case float64:
+					// Reject NaN and Infinity values
+					if math.IsNaN(innerVal) || math.IsInf(innerVal, 0) {
+						return []float64{}, false
+					}
 					slice = append(slice, innerVal)
 				case string:
 					if num, err := strconv.ParseFloat(innerVal, 64); err == nil {
+						// Reject NaN and Infinity values
+						if math.IsNaN(num) || math.IsInf(num, 0) {
+							return []float64{}, false
+						}
 						slice = append(slice, num)
 					} else {
 						return []float64{}, false
