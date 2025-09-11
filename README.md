@@ -1,4 +1,4 @@
-# go-parameters
+# 📘 go-parameters
 > Parameter multi-tool that parses json, msg pack, or multipart form data into a parameter object.
 
 <table>
