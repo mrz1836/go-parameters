@@ -77,7 +77,7 @@ func (p *Params) Get(key string) (val interface{}, ok bool) {
 			root = val.(map[string]interface{})
 		}
 	}
-	return
+	return val, ok
 }
 
 // GetFloatOk get param by key, return float
