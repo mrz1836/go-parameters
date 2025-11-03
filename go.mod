@@ -6,7 +6,7 @@ require (
 	github.com/gorilla/mux v1.8.1
 	github.com/julienschmidt/httprouter v1.3.0
 	github.com/stretchr/testify v1.11.1
-	github.com/ugorji/go/codec v1.3.0
+	github.com/ugorji/go/codec v1.3.1
 )
 
 require (
