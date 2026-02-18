@@ -27,7 +27,7 @@ func Hello(w http.ResponseWriter, req *http.Request) {
 		name = "unknown"
 	}
 
-	_, _ = fmt.Fprintf(w, `{"hello":"%s"}`, name)
+	_, _ = fmt.Fprintf(w, `{"hello":"%s"}`, name) //nolint:gosec // this is just an example
 }
 
 // main starts the router and http server
