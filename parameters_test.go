@@ -3106,7 +3106,7 @@ func TestMakeHTTPRouterParsedReq(t *testing.T) {
 			wrappedHandler := MakeHTTPRouterParsedReq(handler)
 
 			// Create a test request
-			req := httptest.NewRequest(http.MethodGet, "https://example.com", nil)
+			req := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "https://example.com", nil)
 
 			// Create a response recorder
 			rw := httptest.NewRecorder()
