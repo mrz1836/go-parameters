@@ -1,6 +1,7 @@
 package parameters
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -33,7 +34,7 @@ func FuzzParseParams(f *testing.F) {
 
 	f.Fuzz(func(t *testing.T, contentType, body string) {
 		// Create HTTP request
-		req := httptest.NewRequest(http.MethodPost, "/test", strings.NewReader(body))
+		req := httptest.NewRequestWithContext(context.Background(), http.MethodPost, "/test", strings.NewReader(body))
 		req.Header.Set("Content-Type", contentType)
 
 		// Ensure we don't panic during parsing

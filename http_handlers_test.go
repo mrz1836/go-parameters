@@ -2,6 +2,7 @@ package parameters
 
 import (
 	"compress/gzip"
+	"context"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -47,7 +48,7 @@ func TestSendCORS(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// Create a mock HTTP request
-			req := httptest.NewRequest(http.MethodGet, "https://example.com", nil)
+			req := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "https://example.com", nil)
 			if tt.originHeader != "" {
 				req.Header.Set("Origin", tt.originHeader)
 			}
@@ -175,7 +176,7 @@ func TestFilterMap(t *testing.T) {
 func TestGeneralResponse(t *testing.T) {
 	t.Run("Without GZIP", func(t *testing.T) {
 		// Create a mock HTTP request
-		req := httptest.NewRequest(http.MethodGet, "https://example.com", nil)
+		req := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "https://example.com", nil)
 
 		// Create a response recorder to capture the response
 		rr := httptest.NewRecorder()
@@ -194,7 +195,7 @@ func TestGeneralResponse(t *testing.T) {
 
 	t.Run("With GZIP", func(t *testing.T) {
 		// Create a mock HTTP request
-		req := httptest.NewRequest(http.MethodGet, "https://example.com", nil)
+		req := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "https://example.com", nil)
 		req.Header.Set("Accept-Encoding", gZip)
 
 		// Create a response recorder to capture the response
@@ -229,7 +230,7 @@ func TestJSONResp(t *testing.T) {
 	wrapped := JSONResp(handler)
 
 	// Setup test server request and response
-	req := httptest.NewRequest(http.MethodGet, "/", nil)
+	req := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/", nil)
 	resp := httptest.NewRecorder()
 
 	// httprouter requires a Params argument even if empty
@@ -258,7 +259,7 @@ func TestGeneralJSONResponse(t *testing.T) {
 	wrapped := GeneralJSONResponse(handler)
 
 	// Build request with gzip support and CORS origin
-	req := httptest.NewRequest(http.MethodGet, "/", nil)
+	req := httptest.NewRequestWithContext(context.Background(), http.MethodGet, "/", nil)
 	req.Header.Set("Accept-Encoding", "gzip")
 	req.Header.Set("Origin", "https://example.com")
 
