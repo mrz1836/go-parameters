@@ -822,7 +822,7 @@ func ParseParams(req *http.Request) *Params {
 	ct := req.Header.Get("Content-Type")
 	ct = strings.Split(ct, ";")[0]
 	if ct == "multipart/form-data" {
-		if err := req.ParseMultipartForm(10000000); err != nil {
+		if err := req.ParseMultipartForm(10000000); err != nil { //nolint:gosec // form size is bounded to 10MB by the explicit maxMemory argument
 			log.Println("Request.ParseMultipartForm error:", err)
 		}
 	} else {

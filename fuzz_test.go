@@ -72,7 +72,7 @@ func testParamsMethods(t *testing.T, params *Params, contentType, body string) {
 	}()
 
 	// Test various get methods with common keys
-	testKeys := []string{"", "test", "key", "number", "boolean", "array", "nested", "nonexistent"}
+	testKeys := []string{"", "test", testKeyParam, "number", "boolean", "array", "nested", "nonexistent"}
 
 	for _, key := range testKeys {
 		// Basic get - should never panic
